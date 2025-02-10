@@ -1,0 +1,20 @@
+{
+  "dependencies": {
+    "elysia": "^1.2.12",
+    "yargs": "^17.7.2"
+  },
+  "name": "ahh-binary",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "compile:dev": "bun build --compile main.ts --outfile ./dist/ahh",
+    "compile:prod": "bun build --compile --minify --sourcemap main.ts --outfile ./dist/ahh"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/yargs": "^17.0.33"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
