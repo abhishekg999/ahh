@@ -9,6 +9,6 @@ bun install
 To run:
 
 ```bash
-bun run main.ts
+bun main.ts
 ```
 
