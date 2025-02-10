@@ -6,6 +6,7 @@ on:
       - main 
     paths:
       - 'ahh-binary/**'  
+      - '.github/workflows/ahh-binary-build-linux.yaml'  
   workflow_dispatch:
       
 jobs:
@@ -21,19 +22,20 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Change directory to ahh-binary
-        run: cd ahh-binary
-        
       - name: Install dependencies
-        run: bun install
+        run: |
+          cd ahh-binary  
+          bun install
         
       - name: Build binary
-        run: bun run compile:prod
+        run: |
+          cd ahh-binary
+          bun run compile:prod
 
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
-          files: dist/ahh  
+          files: ahh-binary/dist/ahh  
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
