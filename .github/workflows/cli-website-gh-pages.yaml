@@ -42,7 +42,8 @@ jobs:
       - name: Update 404 for GH Pages
         run: | 
           cd cli-website  
-          cp dist/_404/index.html dist/404.html
+          cp dist/404/index.html dist/404.html
+          rm -r dist/404
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Upload artifact
