@@ -2,7 +2,8 @@ name: Deploy static content to Pages
 
 on:
   push:
-    branches: ['main']
+    branches:
+      - master
     paths:
         - 'cli-website/**'  
         - '.github/workflows/cli-website-gh-pages.yaml'  
