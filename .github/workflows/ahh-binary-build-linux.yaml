@@ -32,10 +32,16 @@ jobs:
           cd ahh-binary
           bun run compile:prod
 
+      - name: Generate release tag
+        id: tag
+        run: |
+          echo "release_tag=ahh_$(date +"%Y.%m.%d_%H-%M")" >> $GITHUB_OUTPUT
+
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          files: ahh-binary/dist/ahh  
+          files: ahh-binary/dist/ahh
+          tag_name: ${{ steps.tag.outputs.release_tag }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
