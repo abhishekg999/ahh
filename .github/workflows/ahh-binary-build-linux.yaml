@@ -3,7 +3,7 @@ name: Build and Release Binary
 on:
   push:
     branches:
-      - main 
+      - master 
     paths:
       - 'ahh-binary/**'  
       - '.github/workflows/ahh-binary-build-linux.yaml'  
