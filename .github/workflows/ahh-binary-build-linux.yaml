@@ -44,4 +44,4 @@ jobs:
           files: ahh-binary/dist/ahh
           tag_name: ${{ steps.tag.outputs.release_tag }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
