@@ -10,17 +10,9 @@ function matchTunnelUrl(url: string): string | null {
 
 export async function tunnel(port: number) {
   const url = `http://localhost:${port}`;
-  const proc = Bun.spawn(
-    [
-      "cloudflared",
-      "tunnel",
-      "--url",
-      url,
-    ],
-    {
-      stderr: "pipe",
-    }
-  );
+  const proc = Bun.spawn(["cloudflared", "tunnel", "--url", url], {
+    stderr: "pipe",
+  });
 
   const reader = proc.stderr.getReader();
   const decoder = new TextDecoder();
@@ -32,8 +24,13 @@ export async function tunnel(port: number) {
 
     const text = decoder.decode(value);
 
-    if (text.includes("invalid character 'e'") || text.includes("429 Too Many Requests")) {
-      console.error("Rate limited creating free tunnel. Configure a tunnel on your domain to avoid rate limits.");
+    if (
+      text.includes("invalid character 'e'") ||
+      text.includes("429 Too Many Requests")
+    ) {
+      console.error(
+        "Rate limited creating free tunnel. Configure a tunnel on your domain to avoid rate limits."
+      );
       break;
     }
 
@@ -41,7 +38,7 @@ export async function tunnel(port: number) {
     if (text.includes("Registered tunnel connection") && tunnelUrl) {
       return {
         url: tunnelUrl,
-        kill: proc.kill
+        kill: proc.kill,
       };
     }
   }

@@ -36,17 +36,12 @@ jobs:
         run: |
           cd cli-website
           bun run build
-      - name: Update 404 for GH Pages
-        run: |
-          cd cli-website
-          cp dist/404/index.html dist/404.html
-          rm -r dist/404
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './cli-website/dist'
+          path: './cli-website/out'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

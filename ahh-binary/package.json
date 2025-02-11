@@ -1,13 +1,14 @@
 {
   "dependencies": {
     "elysia": "^1.2.12",
-    "yargs": "^17.7.2"
+    "yargs": "^17.7.2",
+    "zod": "^3.24.1"
   },
   "name": "ahh-binary",
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "compile:dev": "bun build --compile main.ts --outfile ./dist/ahh",
+    "dev": "bun build --outfile ./dist/ahh --compile main.ts && ./dist/ahh",
     "compile:prod": "bun build --compile --minify --sourcemap main.ts --outfile ./dist/ahh"
   },
   "devDependencies": {
