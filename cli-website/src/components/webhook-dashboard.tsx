@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Command,
   CommandDialog,
@@ -9,12 +9,24 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
-import { Input } from "@/components/ui/input"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useWebhookSocket, type WebhookData } from "@/lib/use-webhook-websocket"
+} from "@/components/ui/command";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/components/ui/hover-card";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  useWebhookSocket,
+  type WebhookData,
+} from "@/lib/use-webhook-websocket";
 import {
   ChevronDown,
   Copy,
@@ -26,37 +38,40 @@ import {
   Search,
   Terminal,
   Trash,
-} from "lucide-react"
-import { useEffect, useState } from "react"
-import { useSearchParams } from "next/navigation"
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 export function WebhookDashboard() {
-  const [isOpen, setIsOpen] = useState(false)
-  const [selectedRequest, setSelectedRequest] = useState<WebhookData | null>(null)
-  const searchParams = useSearchParams()
-  const token = searchParams.get("token") || ""
-  const webhookUrl = searchParams.get("url") ? decodeURIComponent(searchParams.get("url")!) : ""
-  const port = searchParams.get("port") || ""
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<WebhookData | null>(
+    null
+  );
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token") || "";
+  const webhookUrl = searchParams.get("url")
+    ? decodeURIComponent(searchParams.get("url")!)
+    : "";
+  const port = searchParams.get("port") || "";
 
-
-  const { requests, isConnected, error } = useWebhookSocket(token, port)
+  const { requests, isConnected } = useWebhookSocket(token, port);
 
   useEffect(() => {
     if (requests.length > 0 && !selectedRequest) {
-      setSelectedRequest(requests[0])
+      setSelectedRequest(requests[0]);
     }
-  }, [requests, selectedRequest])
+  }, [requests, selectedRequest]);
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault()
-        setIsOpen((open) => !open)
+        e.preventDefault();
+        setIsOpen((open) => !open);
       }
-    }
-    document.addEventListener("keydown", down)
-    return () => document.removeEventListener("keydown", down)
-  }, [])
+    };
+    document.addEventListener("keydown", down);
+    return () => document.removeEventListener("keydown", down);
+  }, []);
 
   return (
     <div className="flex h-screen bg-background">
@@ -87,7 +102,9 @@ export function WebhookDashboard() {
             ) : (
               <div className="h-2 w-2 rounded-full bg-red-500" />
             )}
-            <span className="text-xs text-zinc-400">{isConnected ? "Connected" : "Disconnected"}</span>
+            <span className="text-xs text-zinc-400">
+              {isConnected ? "Connected" : "Disconnected"}
+            </span>
           </div>
         </div>
         <div className="p-4">
@@ -122,17 +139,27 @@ export function WebhookDashboard() {
               <div className="flex items-center justify-between">
                 <span
                   className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                    request.method === "POST" ? "bg-green-500/20 text-green-400" : "bg-blue-500/20 text-blue-400"
+                    request.method === "POST"
+                      ? "bg-green-500/20 text-green-400"
+                      : "bg-blue-500/20 text-blue-400"
                   }`}
                 >
                   {request.method}
                 </span>
-                <span className="text-xs text-zinc-500">{new Date(request.timestamp).toLocaleTimeString()}</span>
+                <span className="text-xs text-zinc-500">
+                  {new Date(request.timestamp).toLocaleTimeString()}
+                </span>
               </div>
-              <div className="mt-2 truncate text-sm text-zinc-300">{request.path}</div>
+              <div className="mt-2 truncate text-sm text-zinc-300">
+                {request.path}
+              </div>
               <div className="mt-1 flex items-center space-x-2">
-                {request.headers.Authorization && <KeyRound className="h-3 w-3 text-amber-500" />}
-                <span className="text-xs text-zinc-500">{Object.keys(request.headers).length} headers</span>
+                {request.headers.Authorization && (
+                  <KeyRound className="h-3 w-3 text-amber-500" />
+                )}
+                <span className="text-xs text-zinc-500">
+                  {Object.keys(request.headers).length} headers
+                </span>
               </div>
             </button>
           ))}
@@ -143,7 +170,9 @@ export function WebhookDashboard() {
       <div className="flex-1">
         <div className="flex h-14 items-center justify-between border-b border-zinc-800 bg-zinc-900/50 px-6">
           <div className="flex items-center space-x-4">
-            <h1 className="font-mono text-lg text-zinc-100">Webhook Requests</h1>
+            <h1 className="font-mono text-lg text-zinc-100">
+              Webhook Requests
+            </h1>
             <Button variant="ghost" size="sm" className="h-7 text-xs">
               <RefreshCcw className="mr-2 h-3 w-3" />
               Auto-refresh
@@ -162,7 +191,9 @@ export function WebhookDashboard() {
                 <div className="flex justify-between space-x-4">
                   <div className="space-y-1">
                     <h4 className="text-sm font-semibold">Your webhook URL</h4>
-                    <code className="mt-2 block rounded bg-zinc-900 px-2 py-1 text-xs">{webhookUrl}</code>
+                    <code className="mt-2 block rounded bg-zinc-900 px-2 py-1 text-xs">
+                      {webhookUrl}
+                    </code>
                   </div>
                 </div>
               </HoverCardContent>
@@ -203,12 +234,18 @@ export function WebhookDashboard() {
               </div>
               <TabsContent value="headers" className="mt-4 space-y-4">
                 <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 divide-y divide-zinc-800">
-                  {Object.entries(selectedRequest.headers).map(([key, value]) => (
-                    <div key={key} className="flex">
-                      <div className="w-1/3 p-3 font-mono text-sm text-zinc-400">{key}</div>
-                      <div className="w-2/3 border-l border-zinc-800 p-3 font-mono text-sm text-zinc-100">{value}</div>
-                    </div>
-                  ))}
+                  {Object.entries(selectedRequest.headers).map(
+                    ([key, value]) => (
+                      <div key={key} className="flex">
+                        <div className="w-1/3 p-3 font-mono text-sm text-zinc-400">
+                          {key}
+                        </div>
+                        <div className="w-2/3 border-l border-zinc-800 p-3 font-mono text-sm text-zinc-100">
+                          {value}
+                        </div>
+                      </div>
+                    )
+                  )}
                 </div>
               </TabsContent>
               <TabsContent value="query" className="mt-4">
@@ -218,14 +255,18 @@ export function WebhookDashboard() {
                   </div>
                 ) : (
                   <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 divide-y divide-zinc-800">
-                    {Object.entries(selectedRequest.query).map(([key, value]) => (
-                      <div key={key} className="flex">
-                        <div className="w-1/3 p-3 font-mono text-sm text-zinc-400">{key}</div>
-                        <div className="w-2/3 border-l border-zinc-800 p-3 font-mono text-sm text-zinc-100">
-                          {value}
+                    {Object.entries(selectedRequest.query).map(
+                      ([key, value]) => (
+                        <div key={key} className="flex">
+                          <div className="w-1/3 p-3 font-mono text-sm text-zinc-400">
+                            {key}
+                          </div>
+                          <div className="w-2/3 border-l border-zinc-800 p-3 font-mono text-sm text-zinc-100">
+                            {value}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      )
+                    )}
                   </div>
                 )}
               </TabsContent>
@@ -241,6 +282,5 @@ export function WebhookDashboard() {
         )}
       </div>
     </div>
-  )
+  );
 }
-

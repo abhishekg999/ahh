@@ -1,6 +1,7 @@
-import { WebhookDashboard } from "@/components/webhook-dashboard"
+"use client";
+
+import { WebhookDashboard } from "@/components/webhook-dashboard";
 
 export default function WebhookPage() {
-  return <WebhookDashboard />
+  return <WebhookDashboard />;
 }
-

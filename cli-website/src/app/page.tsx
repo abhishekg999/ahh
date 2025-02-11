@@ -1,29 +1,33 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { Copy, Terminal, ChevronRight, Github } from "lucide-react"
-import { useState, useEffect } from "react"
-import { motion, useAnimation } from "framer-motion"
+import { Button } from "@/components/ui/button";
+import { Copy, Terminal, ChevronRight, Github } from "lucide-react";
+import { useState, useEffect } from "react";
+import { motion, useAnimation } from "framer-motion";
 
-const installCommand = "curl -fsSL https://cli.ahh.bet/install.sh | bash"
-const githubURL = "https://github.com/abhishekg999"
+const installCommand = "curl -fsSL https://cli.ahh.bet/install.sh | bash";
+const githubURL = "https://github.com/abhishekg999";
 
 export default function Page() {
-  const [copied, setCopied] = useState(false)
-  const controls = useAnimation()
+  const [copied, setCopied] = useState(false);
+  const controls = useAnimation();
 
   const copyToClipboard = async () => {
-    await navigator.clipboard.writeText(installCommand)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
+    await navigator.clipboard.writeText(installCommand);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   useEffect(() => {
     controls.start({
       opacity: [0.5, 1, 0.5],
-      transition: { duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" },
-    })
-  }, [controls])
+      transition: {
+        duration: 2,
+        repeat: Number.POSITIVE_INFINITY,
+        ease: "easeInOut",
+      },
+    });
+  }, [controls]);
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-black">
@@ -49,8 +53,11 @@ export default function Page() {
                 Ahh CLI
               </h1>
               <p className="mx-auto max-w-2xl text-base text-zinc-400 sm:text-lg">
-                <span className="text-zinc-300">Fast, reliable, and built for hackers.</span> Your essential toolkit for
-                CTF challenges, designed to make exploitation seamless.
+                <span className="text-zinc-300">
+                  Fast, reliable, and built for hackers.
+                </span>{" "}
+                Your essential toolkit for CTF challenges, designed to make
+                exploitation seamless.
               </p>
             </motion.div>
 
@@ -66,7 +73,9 @@ export default function Page() {
                   animate={controls}
                 />
                 <div className="relative flex items-center justify-between rounded-md bg-zinc-900/90 px-4 py-3">
-                  <code className="mr-8 text-sm tracking-tight text-zinc-100">{installCommand}</code>
+                  <code className="mr-8 text-sm tracking-tight text-zinc-100">
+                    {installCommand}
+                  </code>
                   <Button
                     variant="ghost"
                     size="icon"
@@ -86,7 +95,9 @@ export default function Page() {
                   exit={{ opacity: 0, y: -10 }}
                 >
                   <div className="h-1 w-1 rounded-full bg-green-500" />
-                  <p className="text-center text-sm text-zinc-500">Copied to clipboard</p>
+                  <p className="text-center text-sm text-zinc-500">
+                    Copied to clipboard
+                  </p>
                 </motion.div>
               )}
             </motion.div>
@@ -101,7 +112,11 @@ export default function Page() {
                 Get Started
                 <ChevronRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Button>
-              <Button variant="outline" onClick={() => window.open(githubURL, "_blank")} className="group">
+              <Button
+                variant="outline"
+                onClick={() => window.open(githubURL, "_blank")}
+                className="group"
+              >
                 <Github className="mr-2 h-4 w-4" />
                 View on GitHub
               </Button>
@@ -110,6 +125,5 @@ export default function Page() {
         </div>
       </div>
     </div>
-  )
+  );
 }
-
