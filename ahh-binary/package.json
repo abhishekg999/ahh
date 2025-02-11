@@ -2,7 +2,9 @@
   "dependencies": {
     "@elysiajs/cors": "^1.2.0",
     "@elysiajs/trpc": "^1.1.0",
+    "@types/pem": "^1.14.4",
     "elysia": "^1.2.12",
+    "pem": "^1.14.8",
     "yargs": "^17.7.2",
     "zod": "^3.24.1"
   },
@@ -10,7 +12,9 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "dev": "bun --env-file=.env main.ts",
+    "dev": "bun --env-file=.bun.env.local main.ts",
+    "prod": "bun main.ts",
+    "compile:dev": "bun build --compile --minify --sourcemap --env-file=.bun.env.local main.ts --outfile ./dist/ahh-dev",
     "compile:prod": "bun build --compile --minify --sourcemap main.ts --outfile ./dist/ahh"
   },
   "devDependencies": {

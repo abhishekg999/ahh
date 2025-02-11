@@ -1,7 +1,8 @@
 import { z } from "zod";
 
 export const appConfigSchema = z.object({
-  DEFAULT_WEBHOOK_PORT: z.number(),
+  DEFAULT_WEBHOOK_HTTP_PORT: z.number(),
+  DEFAULT_WEBHOOK_HTTPS_PORT: z.number(),
 });
 
 export const customAppConfig = appConfigSchema.partial();

@@ -19,7 +19,7 @@ export function useWebhookSocket(token: string, port: string) {
   const [error, setError] = useState<string | null>(null)
 
   const connect = useCallback(() => {
-    const ws = new WebSocket(`ws://localhost:${port}/ws`)
+    const ws = new WebSocket(`wss://localhost:${port}/ws`)
 
     ws.onopen = () => {
       setIsConnected(true)

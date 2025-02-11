@@ -176,3 +176,4 @@ dist
 
 # Bun
 bun.lock
+.bun.env.local

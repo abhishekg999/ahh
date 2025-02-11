@@ -2,7 +2,8 @@ import { exists, resource } from "../utils/fs";
 import { customAppConfig, type AppConfig } from "./types";
 
 const DefaultAppConfig = {
-  DEFAULT_WEBHOOK_PORT: 4867,
+  DEFAULT_WEBHOOK_HTTP_PORT: 4867,
+  DEFAULT_WEBHOOK_HTTPS_PORT: 4868,
 };
 
 const ConfigFile = resource("ahh.config.json");
@@ -20,3 +21,4 @@ export async function loadConfig(): Promise<AppConfig> {
   }
   return DefaultAppConfig;
 }
+
