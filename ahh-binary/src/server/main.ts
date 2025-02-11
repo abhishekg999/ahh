@@ -2,28 +2,16 @@ import type { ElysiaWS } from "elysia/ws";
 import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { randomUUID } from "crypto";
-import { createCertificate, type CertificateCreationResult } from "pem";
-import { serve } from "bun";
 
-async function getTLSCert(): Promise<CertificateCreationResult> {
-  return new Promise((resolve, reject) => {
-    createCertificate({ days: 1, selfSigned: true }, (err, keys) => {
-      if (err) {
-        return reject(err);
-      }
-      resolve(keys);
-    });
-  });
-}
-
-export async function createWebhookServer(httpPort: number, httpsPort: number) {
+export async function createWebhookServer(port: number) {
   const token = randomUUID();
   const wsClients = new Set<ElysiaWS>();
 
-  const keys = await getTLSCert();
-
   const server = new Elysia()
     .use(cors({ origin: /cli\.ahh\.bet$/ }))
+    .get("/ws", () => {
+      return "OK";
+    })
     .all("*", (ctx) => {
       const logData = {
         id: randomUUID(),
@@ -40,7 +28,7 @@ export async function createWebhookServer(httpPort: number, httpsPort: number) {
           ws.send(JSON.stringify(logData));
         }
       });
-      return logData;
+      return "OK";
     })
     .ws("/ws", {
       message(ws, message) {
@@ -54,25 +42,12 @@ export async function createWebhookServer(httpPort: number, httpsPort: number) {
       close(ws) {
         wsClients.delete(ws);
       },
-    });
-
-  
-  const http = serve({
-    fetch: server.handle,
-    port: httpPort
-  })
-
-  const https = serve({
-    fetch: server.handle,
-    key: keys.clientKey,
-    cert: keys.certificate,
-    port: httpsPort
-  })
+    })
+    .listen(port);
 
   const kill = () => {
-    http.stop(true);
-    https.stop(true);
+    server.stop(true);
   };
 
-  return { token, httpPort, httpsPort, kill };
+  return { token, port, kill };
 }

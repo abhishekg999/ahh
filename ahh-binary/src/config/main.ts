@@ -21,4 +21,3 @@ export async function loadConfig(): Promise<AppConfig> {
   }
   return DefaultAppConfig;
 }
-

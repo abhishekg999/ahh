@@ -34,12 +34,11 @@ yargs(hideBin(Bun.argv))
   )
   .demandCommand(1, "You must specify a command")
   .command("webhook", "Starts a webhook server.", async (argv) => {
-    const { httpPort, httpsPort, token } = await createWebhookServer(
+    const { port, token } = await createWebhookServer(
       config.DEFAULT_WEBHOOK_HTTP_PORT,
-      config.DEFAULT_WEBHOOK_HTTPS_PORT
     );
     const stopSpin = startSpinner("Starting tunnel, this may take a second...");
-    const { url: tunnelUrl } = await tunnel(httpPort);
+    const { url: tunnelUrl } = await tunnel(port);
     stopSpin();
 
     console.info("Webhook URL", color(tunnelUrl, "cyan"));
@@ -48,7 +47,7 @@ yargs(hideBin(Bun.argv))
       console.error("Failed to create tunnel.");
       return;
     }
-    await openAuthenticatedWebhookDashboard(token, tunnelUrl, httpsPort);
+    await openAuthenticatedWebhookDashboard(token, tunnelUrl);
   })
   .demandCommand(1, "You must specify a command")
   .help()

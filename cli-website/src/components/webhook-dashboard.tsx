@@ -52,9 +52,8 @@ export function WebhookDashboard() {
   const webhookUrl = searchParams.get("url")
     ? decodeURIComponent(searchParams.get("url")!)
     : "";
-  const port = searchParams.get("port") || "";
 
-  const { requests, isConnected } = useWebhookSocket(token, port);
+  const { requests, isConnected } = useWebhookSocket(token, webhookUrl);
 
   useEffect(() => {
     if (requests.length > 0 && !selectedRequest) {

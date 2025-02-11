@@ -13,13 +13,16 @@ export interface WebhookData {
 }
 
 
-export function useWebhookSocket(token: string, port: string) {
+export function useWebhookSocket(token: string, webhookUrl: string) {
   const [requests, setRequests] = useState<WebhookData[]>([])
   const [isConnected, setIsConnected] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const wsUrl = new URL("/ws", webhookUrl);
+  wsUrl.protocol = "wss";
+ 
   const connect = useCallback(() => {
-    const ws = new WebSocket(`wss://localhost:${port}/ws`)
+    const ws = new WebSocket(wsUrl)
 
     ws.onopen = () => {
       setIsConnected(true)
@@ -49,7 +52,7 @@ export function useWebhookSocket(token: string, port: string) {
     return () => {
       ws.close()
     }
-  }, [token, port])
+  }, [token, webhookUrl])
 
   useEffect(() => {
     const cleanup = connect()
