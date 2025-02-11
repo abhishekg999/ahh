@@ -3,6 +3,22 @@ import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { randomUUID } from "crypto";
 
+function filterHeaders(headers: Record<string, string | undefined>) {
+  const result: Record<string, string | undefined> = {};
+  Object.entries(headers).forEach(([key, value]) => {
+    if (
+      key.toLowerCase().startsWith("cf-") ||
+      key.toLowerCase().startsWith("x-forwarded-for") ||
+      key.toLowerCase() === "cdn-loop"
+    ) {
+      return;
+    }
+    result[key] = value;
+  });
+
+  return result;
+}
+
 export async function createWebhookServer(port: number) {
   const token = randomUUID();
   const wsClients = new Set<ElysiaWS>();
@@ -18,7 +34,7 @@ export async function createWebhookServer(port: number) {
         method: ctx.request.method,
         path: ctx.request.url,
         timestamp: new Date().toISOString(),
-        headers: ctx.headers,
+        headers: filterHeaders(ctx.headers),
         query: ctx.query,
         body: ctx.body || "",
       };
