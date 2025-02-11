@@ -14,6 +14,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { useWebhookSocket, type WebhookData } from "@/lib/use-webhook-websocket"
 import {
   ChevronDown,
   Copy,
@@ -27,49 +28,24 @@ import {
   Trash,
 } from "lucide-react"
 import { useEffect, useState } from "react"
-
-interface WebhookRequest {
-  id: string
-  method: string
-  path: string
-  timestamp: string
-  headers: Record<string, string>
-  query: Record<string, string>
-  body: string
-  status: "success" | "error" | "pending"
-}
+import { useSearchParams } from "next/navigation"
 
 export function WebhookDashboard() {
   const [isOpen, setIsOpen] = useState(false)
-  const [requests] = useState<WebhookRequest[]>([
-    {
-      id: "1",
-      method: "POST",
-      path: "/api/webhook",
-      timestamp: new Date().toISOString(),
-      headers: {
-        "Content-Type": "application/json",
-        "User-Agent": "curl/7.64.1",
-        Authorization: "Bearer sk_test_123",
-      },
-      query: {},
-      body: '{"event": "user.created", "data": {"id": "123", "email": "user@example.com"}}',
-      status: "success",
-    },
-    {
-      id: "2",
-      method: "GET",
-      path: "/api/status",
-      timestamp: new Date(Date.now() - 1000 * 60).toISOString(),
-      headers: {
-        "User-Agent": "Mozilla/5.0",
-      },
-      query: { id: "123" },
-      body: "",
-      status: "pending",
-    },
-  ])
-  const [selectedRequest, setSelectedRequest] = useState<WebhookRequest | null>(requests[0])
+  const [selectedRequest, setSelectedRequest] = useState<WebhookData | null>(null)
+  const searchParams = useSearchParams()
+  const token = searchParams.get("token") || ""
+  const webhookUrl = searchParams.get("url") ? decodeURIComponent(searchParams.get("url")!) : ""
+  const port = searchParams.get("port") || ""
+
+
+  const { requests, isConnected, error } = useWebhookSocket(token, port)
+
+  useEffect(() => {
+    if (requests.length > 0 && !selectedRequest) {
+      setSelectedRequest(requests[0])
+    }
+  }, [requests, selectedRequest])
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -103,11 +79,16 @@ export function WebhookDashboard() {
         <div className="flex h-14 items-center justify-between border-b border-zinc-800 px-4">
           <div className="flex items-center space-x-2">
             <Terminal className="h-5 w-5 text-green-500" />
-            <span className="font-cal text-sm">Ahh Webhooks</span>
+            <span className="font-mono text-sm">Ahh Webhooks</span>
           </div>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <Plus className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center space-x-2">
+            {isConnected ? (
+              <div className="h-2 w-2 rounded-full bg-green-500" />
+            ) : (
+              <div className="h-2 w-2 rounded-full bg-red-500" />
+            )}
+            <span className="text-xs text-zinc-400">{isConnected ? "Connected" : "Disconnected"}</span>
+          </div>
         </div>
         <div className="p-4">
           <div className="flex space-x-2">
@@ -123,8 +104,8 @@ export function WebhookDashboard() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem>All requests</DropdownMenuItem>
-                <DropdownMenuItem>Successful only</DropdownMenuItem>
-                <DropdownMenuItem>Failed only</DropdownMenuItem>
+                <DropdownMenuItem>POST only</DropdownMenuItem>
+                <DropdownMenuItem>GET only</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -162,7 +143,7 @@ export function WebhookDashboard() {
       <div className="flex-1">
         <div className="flex h-14 items-center justify-between border-b border-zinc-800 bg-zinc-900/50 px-6">
           <div className="flex items-center space-x-4">
-            <h1 className="font-cal text-lg text-zinc-100">Webhook Requests</h1>
+            <h1 className="font-mono text-lg text-zinc-100">Webhook Requests</h1>
             <Button variant="ghost" size="sm" className="h-7 text-xs">
               <RefreshCcw className="mr-2 h-3 w-3" />
               Auto-refresh
@@ -181,10 +162,7 @@ export function WebhookDashboard() {
                 <div className="flex justify-between space-x-4">
                   <div className="space-y-1">
                     <h4 className="text-sm font-semibold">Your webhook URL</h4>
-                    <p className="text-sm text-zinc-500">Use this URL to receive webhook events</p>
-                    <code className="mt-2 block rounded bg-zinc-900 px-2 py-1 text-xs">
-                      https://cli.ahh.bet/webhook/abc123
-                    </code>
+                    <code className="mt-2 block rounded bg-zinc-900 px-2 py-1 text-xs">{webhookUrl}</code>
                   </div>
                 </div>
               </HoverCardContent>
@@ -253,7 +231,9 @@ export function WebhookDashboard() {
               </TabsContent>
               <TabsContent value="body" className="mt-4">
                 <pre className="overflow-auto rounded-lg border border-zinc-800 bg-zinc-900/50 p-4 font-mono text-sm text-zinc-100">
-                  {JSON.stringify(JSON.parse(selectedRequest.body), null, 2)}
+                  {typeof selectedRequest.body === "string"
+                    ? selectedRequest.body
+                    : JSON.stringify(selectedRequest.body, null, 2)}
                 </pre>
               </TabsContent>
             </Tabs>
