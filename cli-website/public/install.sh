@@ -27,12 +27,17 @@ if [[ $? -ne 0 ]]; then
 fi
 
 echo -e "${BLUE}Extracting files...${RESET}"
-tar -xzvf "$install_dir/$archive_name" -C "$install_dir"
+tar -xzf "$install_dir/$archive_name" -C "$install_dir"
 rm -f "$install_dir/$archive_name"
 chmod +x "$exe"
 
+# Generate completion script
+AHH_COMPLETIONS=1=1 "$exe" > "$install_dir/_ahh"
+
 add_to_path() {
   local shell_config
+
+  # Then add the required lines to the shell config file
 
   case $(basename "$SHELL") in
     fish)

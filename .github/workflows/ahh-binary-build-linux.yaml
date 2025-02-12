@@ -32,7 +32,6 @@ jobs:
         run: |
           cd ahh-binary
           bun run compile:prod
-          bun run completions:prod
 
       - name: Archive dist folder
         run: |
