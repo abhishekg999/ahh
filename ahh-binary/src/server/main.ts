@@ -8,7 +8,7 @@ function filterHeaders(headers: Record<string, string | undefined>) {
   Object.entries(headers).forEach(([key, value]) => {
     if (
       key.toLowerCase().startsWith("cf-") ||
-      key.toLowerCase().startsWith("x-forwarded-for") ||
+      key.toLowerCase().startsWith("x-forwarded") ||
       key.toLowerCase() === "cdn-loop"
     ) {
       return;

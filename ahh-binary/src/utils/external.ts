@@ -1,13 +1,12 @@
 import { AHH_WEBHOOK_URL } from "../constants/main";
 
 const browser = process.env.BROWSER || "xdg-open";
-const defaultFormatFunc = (url: string) => `Opening ${url} in browser...`;
 
 export async function openURLInBrowser(
   url: string,
-  formatFunc: (url: string) => string = defaultFormatFunc
+  formatFunc: ((url: string) => string) | null = null
 ) {
-  console.info(formatFunc(url));
+  if (formatFunc) console.info(formatFunc(url));
   await Bun.spawn([browser, url]);
 }
 

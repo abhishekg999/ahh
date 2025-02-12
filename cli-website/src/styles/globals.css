@@ -59,3 +59,28 @@
   animation: float 3s ease-in-out infinite;
 }
 
+
+/* Scrollbar */
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  @apply bg-muted;
+  border-radius: 5px;
+}
+
+*::-webkit-scrollbar-thumb {
+  @apply bg-secondary;
+  border-radius: 5px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  @apply bg-secondary-foreground/20;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--secondary)) hsl(var(--muted));
+}

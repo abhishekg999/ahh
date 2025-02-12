@@ -27,6 +27,7 @@ import {
   useWebhookSocket,
   type WebhookData,
 } from "@/lib/use-webhook-websocket";
+import { useWebhookParams } from "@/lib/use-webhook-params";
 import {
   ChevronDown,
   Copy,
@@ -40,26 +41,30 @@ import {
   Trash,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
 
 export function WebhookDashboard() {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<WebhookData | null>(
     null
   );
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token") || "";
-  const webhookUrl = searchParams.get("url")
-    ? decodeURIComponent(searchParams.get("url")!)
-    : "";
-
+  const [searchTerm, setSearchTerm] = useState("");
+  const { token, webhookUrl } = useWebhookParams();
   const { requests, isConnected } = useWebhookSocket(token, webhookUrl);
 
+  const filteredRequests = requests.filter(
+    (request) =>
+      request.path.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      request.method.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      JSON.stringify(request.body)
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase())
+  );
+
   useEffect(() => {
-    if (requests.length > 0 && !selectedRequest) {
-      setSelectedRequest(requests[0]);
+    if (filteredRequests.length > 0 && !selectedRequest) {
+      setSelectedRequest(filteredRequests[0]);
     }
-  }, [requests, selectedRequest]);
+  }, [filteredRequests, selectedRequest]);
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -73,7 +78,7 @@ export function WebhookDashboard() {
   }, []);
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex h-screen w-screen overflow-hidden bg-background">
       <CommandDialog open={isOpen} onOpenChange={setIsOpen}>
         <Command>
           <CommandInput placeholder="Search all requests..." />
@@ -89,7 +94,7 @@ export function WebhookDashboard() {
       </CommandDialog>
 
       {/* Sidebar */}
-      <div className="w-80 flex-shrink-0 border-r border-zinc-800 bg-zinc-900/50">
+      <div className="w-80 flex-shrink-0 border-r border-zinc-800 bg-zinc-900/50 flex flex-col">
         <div className="flex h-14 items-center justify-between border-b border-zinc-800 px-4">
           <div className="flex items-center space-x-2">
             <Terminal className="h-5 w-5 text-green-500" />
@@ -110,7 +115,12 @@ export function WebhookDashboard() {
           <div className="flex space-x-2">
             <div className="relative flex-1">
               <Search className="absolute left-2 top-2.5 h-4 w-4 text-zinc-500" />
-              <Input placeholder="Search requests" className="pl-8" />
+              <Input
+                placeholder="Search requests"
+                className="pl-8"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -126,8 +136,8 @@ export function WebhookDashboard() {
             </DropdownMenu>
           </div>
         </div>
-        <div className="overflow-auto px-2">
-          {requests.map((request) => (
+        <div className="flex-1 overflow-auto px-2">
+          {filteredRequests.map((request) => (
             <button
               key={request.id}
               onClick={() => setSelectedRequest(request)}
@@ -166,7 +176,7 @@ export function WebhookDashboard() {
       </div>
 
       {/* Main Content */}
-      <div className="flex-1">
+      <div className="flex-1 flex flex-col overflow-hidden">
         <div className="flex h-14 items-center justify-between border-b border-zinc-800 bg-zinc-900/50 px-6">
           <div className="flex items-center space-x-4">
             <h1 className="font-mono text-lg text-zinc-100">
@@ -205,7 +215,7 @@ export function WebhookDashboard() {
         </div>
 
         {selectedRequest && (
-          <div className="p-6">
+          <div className="flex-1 overflow-auto p-6">
             <Tabs defaultValue="headers" className="w-full">
               <div className="flex items-center justify-between">
                 <TabsList className="w-auto bg-zinc-900/50">
@@ -232,7 +242,7 @@ export function WebhookDashboard() {
                 </DropdownMenu>
               </div>
               <TabsContent value="headers" className="mt-4 space-y-4">
-                <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 divide-y divide-zinc-800">
+                <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 divide-y divide-zinc-800 max-h-[calc(100vh-14rem)] overflow-auto">
                   {Object.entries(selectedRequest.headers).map(
                     ([key, value]) => (
                       <div key={key} className="flex">
@@ -253,7 +263,7 @@ export function WebhookDashboard() {
                     No query parameters
                   </div>
                 ) : (
-                  <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 divide-y divide-zinc-800">
+                  <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 divide-y divide-zinc-800 max-h-[calc(100vh-14rem)] overflow-auto">
                     {Object.entries(selectedRequest.query).map(
                       ([key, value]) => (
                         <div key={key} className="flex">
@@ -270,7 +280,7 @@ export function WebhookDashboard() {
                 )}
               </TabsContent>
               <TabsContent value="body" className="mt-4">
-                <pre className="overflow-auto rounded-lg border border-zinc-800 bg-zinc-900/50 p-4 font-mono text-sm text-zinc-100">
+                <pre className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-4 font-mono text-sm text-zinc-100 max-h-[calc(100vh-14rem)] overflow-auto">
                   {typeof selectedRequest.body === "string"
                     ? selectedRequest.body
                     : JSON.stringify(selectedRequest.body, null, 2)}
