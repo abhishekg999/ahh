@@ -6,8 +6,6 @@ import { color, startSpinner } from "./src/utils/text";
 import { loadConfig } from "./src/config/main";
 import { openAuthenticatedWebhookDashboard } from "./src/utils/external";
 
-const config = await loadConfig();
-
 const main = yargs(hideBin(Bun.argv))
   .scriptName("ahh")
   .version("1.0.0")
@@ -53,10 +51,10 @@ const main = yargs(hideBin(Bun.argv))
   .help()
   .strict()
 
-
 if (process.env.AHH_COMPLETIONS) {
   main.showCompletionScript();
   process.exit(0);
 }
 
+const config = await loadConfig();
 main.parse();
