@@ -4,6 +4,9 @@ on:
   push:
     branches: 
       - 'master'
+    paths:
+      - 'cli-website/**'
+      - '.github/workflows/cli-website-gh-pages.yaml'
   workflow_dispatch:
 
 permissions:
