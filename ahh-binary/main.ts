@@ -1,7 +1,7 @@
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { tunnel } from "./src/tunnel/main";
-import { createWebhookServer } from "./src/server/main";
+import { createWebhookServer } from "./src/webhook/main";
 import { color, startSpinner } from "./src/utils/text";
 import { loadConfig } from "./src/config/main";
 import { openAuthenticatedWebhookDashboard } from "./src/utils/external";
@@ -30,7 +30,6 @@ const main = yargs(hideBin(Bun.argv))
       }
     }
   )
-  .demandCommand(1, "You must specify a command")
   .command("webhook", "Starts a webhook server.", async (argv) => {
     const { port, token } = await createWebhookServer(
       config.DEFAULT_WEBHOOK_HTTP_PORT,
@@ -47,7 +46,8 @@ const main = yargs(hideBin(Bun.argv))
     }
     await openAuthenticatedWebhookDashboard(token, tunnelUrl);
   })
-  .demandCommand(1, "You must specify a command")
+  
+  .demandCommand(1, "You must specify a command.")
   .help()
   .strict()
 
