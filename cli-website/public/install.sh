@@ -3,6 +3,7 @@
 install_dir="$HOME/.ahh"
 bin_dir="$install_dir/bin"
 exe="$bin_dir/ahh"
+archive_name="ahh-dist.tar.gz"
 
 # Colors
 RED="\033[31m"
@@ -19,12 +20,15 @@ fi
 mkdir -p "$bin_dir"
 
 echo -e "${BLUE}Downloading ahh CLI...${RESET}"
-curl --fail --location --progress-bar --output "$exe" "https://github.com/abhishekg999/ahh/releases/latest/download/ahh"
+curl --fail --location --progress-bar --output "$install_dir/$archive_name" "https://github.com/abhishekg999/ahh/releases/latest/download/$archive_name"
 if [[ $? -ne 0 ]]; then
-  echo -e "${RED}Failed to download the binary${RESET}"
+  echo -e "${RED}Failed to download the archive${RESET}"
   exit 1
 fi
 
+echo -e "${BLUE}Extracting files...${RESET}"
+tar -xzvf "$install_dir/$archive_name" -C "$install_dir"
+rm -f "$install_dir/$archive_name"
 chmod +x "$exe"
 
 add_to_path() {
@@ -34,21 +38,35 @@ add_to_path() {
     fish)
       shell_config="$HOME/.config/fish/config.fish"
       echo -e "\n" >> "$shell_config"
+      echo -e "# ahh" >> "$shell_config"
+      echo -e "set -g -x AHH_HOME \"$install_dir\"" >> "$shell_config"
       echo -e "set -g -x PATH $bin_dir \$PATH" >> "$shell_config"
+      echo -e "# ahh completions" >> "$shell_config"
+      echo -e "[ -s \"$install_dir/_ahh\" ] && source \"$install_dir/_ahh\"" >> "$shell_config"
       ;;
     zsh)
       shell_config="$HOME/.zshrc"
       echo -e "\n" >> "$shell_config"
+      echo -e "# ahh" >> "$shell_config"
+      echo -e "export AHH_HOME=\"$install_dir\"" >> "$shell_config"
       echo -e "export PATH=\"$bin_dir:\$PATH\"" >> "$shell_config"
+      echo -e "# ahh completions" >> "$shell_config"
+      echo -e "[ -s \"$install_dir/_ahh\" ] && source \"$install_dir/_ahh\"" >> "$shell_config"
       ;;
     bash)
       shell_config="$HOME/.bashrc"
       echo -e "\n" >> "$shell_config"
+      echo -e "# ahh" >> "$shell_config"
+      echo -e "export AHH_HOME=\"$install_dir\"" >> "$shell_config"
       echo -e "export PATH=\"$bin_dir:\$PATH\"" >> "$shell_config"
+      echo -e "# ahh completions" >> "$shell_config"
+      echo -e "[ -s \"$install_dir/_ahh\" ] && source \"$install_dir/_ahh\"" >> "$shell_config"
       ;;
     *)
       echo -e "${YELLOW}Manually add the following to your shell config file:${RESET}"
+      echo -e "  export AHH_HOME=\"$install_dir\""
       echo -e "  export PATH=\"$bin_dir:\$PATH\""
+      echo -e "  [ -s \"$install_dir/_ahh\" ] && source \"$install_dir/_ahh\""
       ;;
   esac
 }
@@ -76,7 +94,9 @@ if [[ -n "$refresh_command" ]]; then
     echo -e "  $refresh_command"
 else
     echo -e "${YELLOW}Manually add the following to your shell config file and restart your shell:${RESET}"
+    echo -e "  export AHH_HOME=\"$install_dir\""
     echo -e "  export PATH=\"$bin_dir:\$PATH\""
+    echo -e "  [ -s \"$install_dir/_ahh\" ] && source \"$install_dir/_ahh\""
 fi
 
 echo

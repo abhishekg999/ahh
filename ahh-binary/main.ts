@@ -8,7 +8,7 @@ import { openAuthenticatedWebhookDashboard } from "./src/utils/external";
 
 const config = await loadConfig();
 
-yargs(hideBin(Bun.argv))
+const main = yargs(hideBin(Bun.argv))
   .scriptName("ahh")
   .version("1.0.0")
   .command(
@@ -52,4 +52,11 @@ yargs(hideBin(Bun.argv))
   .demandCommand(1, "You must specify a command")
   .help()
   .strict()
-  .parse();
+
+
+if (process.env.AHH_COMPLETIONS) {
+  main.showCompletionScript();
+  process.exit(0);
+}
+
+main.parse();

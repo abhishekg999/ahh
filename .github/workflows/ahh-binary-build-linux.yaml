@@ -3,20 +3,20 @@ name: Build and Release Binary
 on:
   push:
     branches:
-      - master 
+      - master
     paths:
-      - 'ahh-binary/**'  
-      - '.github/workflows/ahh-binary-build-linux.yaml'  
+      - 'ahh-binary/**'
+      - '.github/workflows/ahh-binary-build-linux.yaml'
   workflow_dispatch:
-      
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        
+
       - name: Setup Bun Runtime
         uses: oven-sh/setup-bun@v1
         with:
@@ -24,13 +24,19 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd ahh-binary  
+          cd ahh-binary
           bun install
-        
+
       - name: Build binary
         run: |
           cd ahh-binary
           bun run compile:prod
+          bun run completions:prod
+
+      - name: Archive dist folder
+        run: |
+          cd ahh-binary/dist
+          tar -czvf ../ahh-dist.tar.gz *
 
       - name: Generate release tag
         id: tag
@@ -41,7 +47,7 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          files: ahh-binary/dist/ahh
+          files: ahh-binary/ahh-dist.tar.gz
           tag_name: ${{ steps.tag.outputs.release_tag }}
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
