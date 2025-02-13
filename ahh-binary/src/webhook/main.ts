@@ -29,10 +29,11 @@ export async function createWebhookServer(port: number) {
       return "OK";
     })
     .all("*", (ctx) => {
+      const path = new URL(ctx.request.url).pathname;
       const logData = {
         id: randomUUID(),
         method: ctx.request.method,
-        path: ctx.request.url,
+        path: path,
         timestamp: new Date().toISOString(),
         headers: filterHeaders(ctx.headers),
         query: ctx.query,
