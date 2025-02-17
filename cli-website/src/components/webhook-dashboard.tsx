@@ -157,12 +157,15 @@ export function WebhookDashboard() {
               <div className="mt-2 truncate text-sm text-zinc-300">
                 {request.path}
               </div>
-              <div className="mt-1 flex items-center space-x-2">
+              <div className="mt-1 flex items-center justify-between space-x-2">
                 {request.headers.Authorization && (
                   <KeyRound className="h-3 w-3 text-amber-500" />
                 )}
                 <span className="text-xs text-zinc-500">
                   {Object.keys(request.headers).length} headers
+                </span>
+                <span className="text-xs text-zinc-500">
+                  {Object.keys(request.query).length} query params 
                 </span>
               </div>
             </button>
