@@ -191,20 +191,27 @@ export function WebhookDashboard() {
                 <ChevronDown className="ml-2 h-4 w-4" />
               </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-80">
+              <DropdownMenuContent className="w-80 mt-1">
               <div className="p-3">
-                <h4 className="mb-2 text-sm font-semibold">Your webhook URL</h4>
-                <button
-                onClick={() => navigator.clipboard.writeText(webhookUrl)}
-                className="w-full group"
-                >
-                <code className="block w-full rounded bg-zinc-900 px-2 py-1 text-xs transition-colors group-hover:bg-zinc-800">
-                  {webhookUrl}
-                </code>
-                </button>
-                <p className="mt-2 text-xs text-zinc-500">
-                Click to copy to clipboard
-                </p>
+                {webhookUrl ? 
+                <>
+                  <h4 className="mb-2 text-sm font-semibold">Your webhook URL</h4>
+                  <button
+                  onClick={() => navigator.clipboard.writeText(webhookUrl)}
+                  className="w-full group"
+                  >
+                  <code className="block w-full rounded bg-zinc-900 px-2 py-1 text-xs transition-colors group-hover:bg-zinc-800">
+                    {webhookUrl}
+                  </code>
+                  </button>
+                  <p className="mt-2 text-xs text-zinc-500">
+                  Click to copy to clipboard
+                  </p>
+                </> : 
+                <>
+                  <p className="text-xs text-zinc-500">No webhook URL available.</p>
+                </>}
+
               </div>
               </DropdownMenuContent>
             </DropdownMenu>
