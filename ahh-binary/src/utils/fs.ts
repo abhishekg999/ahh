@@ -24,3 +24,11 @@ export async function exists(resource: string): Promise<boolean> {
   const file = Bun.file(resource);
   return await file.exists();
 }
+
+export async function getStdin(): Promise<string> {
+  return await new Promise<string>((resolve) => {
+    let data = "";
+    process.stdin.on("data", (chunk) => data += chunk);
+    process.stdin.on("end", () => resolve(data));
+  });
+}

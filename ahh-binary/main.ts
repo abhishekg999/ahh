@@ -3,12 +3,14 @@ import { hideBin } from "yargs/helpers";
 import { tunnel } from "./src/tunnel/main";
 import { createWebhookServer } from "./src/webhook/main";
 import { color, startSpinner } from "./src/utils/text";
-import { loadConfig } from "./src/config/main";
 import { openAuthenticatedWebhookDashboard } from "./src/utils/external";
 
 import {WORKSPACE_CHOICES} from "./src/workspace/choices";
 import { initWorkspace } from "./src/workspace/main";
 import { copyToClipboard } from "./src/clip/main";
+import { getConfig } from "./src/config/main";
+import { configureWebhook, selectWebhook, sendToDiscord } from "./src/share-discord/main";
+import { getStdin } from "./src/utils/fs";
 
 const main = yargs(hideBin(Bun.argv))
   .scriptName("ahh")
@@ -36,7 +38,7 @@ const main = yargs(hideBin(Bun.argv))
   )
   .command("webhook", "Starts a webhook server.", async (argv) => {
     const { port, token } = await createWebhookServer(
-      config.DEFAULT_WEBHOOK_HTTP_PORT,
+      (await getConfig()).DEFAULT_WEBHOOK_HTTP_PORT,
     );
     const stopSpin = startSpinner("Starting tunnel, this may take a second...");
     const { url: tunnelUrl } = await tunnel(port);
@@ -75,18 +77,31 @@ const main = yargs(hideBin(Bun.argv))
     }
   )
   .command("clip", "Copy any stdin to the clipboard.", async () => {
-    const input = await new Promise<string>((resolve) => {
-      let data = "";
-      process.stdin.on("data", (chunk) => {
-        data += chunk;
-      });
-      process.stdin.on("end", () => {
-        resolve(data);
-      });
-    });
-    
+    const input = await getStdin();
     await copyToClipboard(input);
   })
+  .command(
+    "share-discord",
+    "Share content through Discord webhook",
+    (yargs) =>
+      yargs
+        .option("configure", {
+          alias: "c",
+          type: "boolean",
+          description: "Configure webhooks",
+        }),
+    async (argv) => {
+      if (argv.configure) {
+        await configureWebhook();
+        return;
+      }
+
+      const webhookUrl = await selectWebhook();
+      const content = await getStdin();
+      
+      await sendToDiscord(content, webhookUrl);
+    }
+  )
   .demandCommand(1, "You must specify a command.")
   .help()
   .strict()
@@ -96,5 +111,4 @@ if (process.env.AHH_COMPLETIONS) {
   process.exit(0);
 }
 
-const config = await loadConfig();
 main.parse();
