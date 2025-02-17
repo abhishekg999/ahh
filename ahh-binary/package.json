@@ -2,7 +2,9 @@
   "dependencies": {
     "@elysiajs/cors": "^1.2.0",
     "@elysiajs/trpc": "^1.1.0",
+    "@types/copy-paste": "^1.1.33",
     "@types/pem": "^1.14.4",
+    "copy-paste": "^1.5.3",
     "elysia": "^1.2.12",
     "pem": "^1.14.8",
     "yargs": "^17.7.2",

@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import { motion, useAnimation } from "framer-motion";
 
 const installCommand = "curl -fsSL https://cli.ahh.bet/install.sh | bash";
-const githubURL = "https://github.com/abhishekg999";
+const githubURL = "https://github.com/abhishekg999/ahh";
 
 export default function Page() {
   const [copied, setCopied] = useState(false);

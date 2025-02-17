@@ -8,6 +8,7 @@ import { openAuthenticatedWebhookDashboard } from "./src/utils/external";
 
 import {WORKSPACE_CHOICES} from "./src/workspace/choices";
 import { initWorkspace } from "./src/workspace/main";
+import { copyToClipboard } from "./src/clip/main";
 
 const main = yargs(hideBin(Bun.argv))
   .scriptName("ahh")
@@ -73,6 +74,19 @@ const main = yargs(hideBin(Bun.argv))
       console.log("Workspace initialized.");
     }
   )
+  .command("clip", "Copy any stdin to the clipboard.", async () => {
+    const input = await new Promise<string>((resolve) => {
+      let data = "";
+      process.stdin.on("data", (chunk) => {
+        data += chunk;
+      });
+      process.stdin.on("end", () => {
+        resolve(data);
+      });
+    });
+    
+    await copyToClipboard(input);
+  })
   .demandCommand(1, "You must specify a command.")
   .help()
   .strict()
