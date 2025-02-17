@@ -27,6 +27,11 @@ jobs:
           cd ahh-binary
           bun install
 
+      - name: Setup CLI Workspaces
+        run: |
+          chmod +x ./setup-workspaces.sh
+          ./setup-workspaces.sh
+          
       - name: Build binary
         shell: bash
         run: |

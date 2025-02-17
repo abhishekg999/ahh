@@ -16,11 +16,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -188,25 +183,31 @@ export function WebhookDashboard() {
             </Button>
           </div>
           <div className="flex items-center space-x-2">
-            <HoverCard>
-              <HoverCardTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <KeyRound className="mr-2 h-4 w-4" />
-                  Webhook URL
-                  <ChevronDown className="ml-2 h-4 w-4" />
-                </Button>
-              </HoverCardTrigger>
-              <HoverCardContent className="w-80">
-                <div className="flex justify-between space-x-4">
-                  <div className="space-y-1">
-                    <h4 className="text-sm font-semibold">Your webhook URL</h4>
-                    <code className="mt-2 block rounded bg-zinc-900 px-2 py-1 text-xs">
-                      {webhookUrl}
-                    </code>
-                  </div>
-                </div>
-              </HoverCardContent>
-            </HoverCard>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <KeyRound className="mr-2 h-4 w-4" />
+                Webhook URL
+                <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-80">
+              <div className="p-3">
+                <h4 className="mb-2 text-sm font-semibold">Your webhook URL</h4>
+                <button
+                onClick={() => navigator.clipboard.writeText(webhookUrl)}
+                className="w-full group"
+                >
+                <code className="block w-full rounded bg-zinc-900 px-2 py-1 text-xs transition-colors group-hover:bg-zinc-800">
+                  {webhookUrl}
+                </code>
+                </button>
+                <p className="mt-2 text-xs text-zinc-500">
+                Click to copy to clipboard
+                </p>
+              </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
               New Webhook
@@ -215,8 +216,8 @@ export function WebhookDashboard() {
         </div>
 
         {selectedRequest && (
-          <div className="flex-1 overflow-auto p-6">
-            <Tabs defaultValue="headers" className="w-full">
+          <div className="flex-1 overflow-auto p-6">          
+            <Tabs defaultValue="headers" className="w-full h-full">
               <div className="flex items-center justify-between">
                 <TabsList className="w-auto bg-zinc-900/50">
                   <TabsTrigger value="headers">Headers</TabsTrigger>
@@ -242,7 +243,7 @@ export function WebhookDashboard() {
                 </DropdownMenu>
               </div>
               <TabsContent value="headers" className="mt-4 space-y-4">
-                <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 divide-y divide-zinc-800 max-h-[calc(100vh-14rem)] overflow-auto">
+                <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 divide-y divide-zinc-800 max-h-[calc(100vh-10rem)] overflow-auto">
                   {Object.entries(selectedRequest.headers).map(
                     ([key, value]) => (
                       <div key={key} className="flex">

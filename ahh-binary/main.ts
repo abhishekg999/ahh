@@ -6,6 +6,9 @@ import { color, startSpinner } from "./src/utils/text";
 import { loadConfig } from "./src/config/main";
 import { openAuthenticatedWebhookDashboard } from "./src/utils/external";
 
+import {WORKSPACE_CHOICES} from "./src/workspace/choices";
+import { initWorkspace } from "./src/workspace/main";
+
 const main = yargs(hideBin(Bun.argv))
   .scriptName("ahh")
   .version("1.0.0")
@@ -46,7 +49,30 @@ const main = yargs(hideBin(Bun.argv))
     }
     await openAuthenticatedWebhookDashboard(token, tunnelUrl);
   })
-  
+  .command(
+    "workspace <name>",
+    "Initialize a workspace.",
+    (yargs) =>
+      yargs
+      .positional("name", {
+        type: "string",
+        description: "Name of the workspace",
+        demandOption: true,
+        choices: WORKSPACE_CHOICES, 
+      })
+      .option("path", {
+          alias: "p",
+          type: "string",
+          description: "Path to load the workspace",
+        }),
+    async (argv) => {
+      const { name, path } = argv;
+      const stopSpin = startSpinner("Initializing workspace...");
+      await initWorkspace(name, path);
+      stopSpin();
+      console.log("Workspace initialized.");
+    }
+  )
   .demandCommand(1, "You must specify a command.")
   .help()
   .strict()

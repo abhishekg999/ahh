@@ -4,8 +4,12 @@ import path from "path";
 export const HOME_DIR = path.join(process.env.HOME || "/tmp", ".ahh");
 export const TLS_DIR = path.join(HOME_DIR, "webhook/tls");
 
+export function mkdirAlways(dir: string) {
+  return mkdir(dir, { recursive: true });
+}
+
 if (!Bun.file(HOME_DIR).exists()) {
-  await mkdir(HOME_DIR, { recursive: true });
+  await mkdirAlways(HOME_DIR);
 }
 
 if (HOME_DIR.startsWith("/tmp")) {
