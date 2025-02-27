@@ -3,7 +3,14 @@
 install_dir="$HOME/.ahh"
 bin_dir="$install_dir/bin"
 exe="$bin_dir/ahh"
-archive_name="ahh-dist.tar.gz"
+
+case "$(uname -s)" in
+  Linux*)     os="linux";;
+  Darwin*)    os="darwin";;
+  *)          echo "Unsupported operating system"; exit 1;;
+esac
+
+archive_name="ahh-dist-${os}.tar.gz"
 
 # Colors
 RED="\033[31m"
