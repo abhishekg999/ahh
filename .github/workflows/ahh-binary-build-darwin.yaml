@@ -6,7 +6,7 @@ on:
       - master
     paths:
       - 'ahh-binary/**'
-      - '.github/workflows/ahh-binary-build-linux.yaml'
+      - '.github/workflows/ahh-binary-build-darwin.yaml'
   workflow_dispatch:
 
 jobs:
@@ -48,15 +48,21 @@ jobs:
         run: |
           echo "release_tag=ahh_$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
-      - name: Create Release
-        id: create_release
-        uses: softprops/action-gh-release@v2
-        with:
-          files: ahh-binary/ahh-dist-darwin.tar.gz
-          tag_name: ${{ steps.tag.outputs.release_tag }}
-          fail_on_unmatched_files: false
-          draft: false
-          prerelease: false
-          generate_release_notes: true
+      - name: Wait for Release and Upload
+        run: |
+          for i in {1..10}; do
+            if gh release view ${{ steps.tag.outputs.release_tag }} --repo $GITHUB_REPOSITORY > /dev/null 2>&1; then
+              gh release upload ${{ steps.tag.outputs.release_tag }} ahh-binary/ahh-dist-darwin.tar.gz --repo $GITHUB_REPOSITORY
+              echo "Uploaded macOS binary to release"
+              break
+            else
+              echo "Release not found yet, retrying in 10 seconds ($i/10)"
+              sleep 10
+            fi
+          done
+          if [ $i -eq 10 ]; then
+            echo "Error: Release not found after 10 attempts, aborting."
+            exit 1
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
