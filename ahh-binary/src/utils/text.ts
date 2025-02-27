@@ -1,3 +1,5 @@
+import qrcode from "qrcode-terminal";
+
 const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
 
 export function startSpinner(text: string): () => void {
@@ -30,4 +32,10 @@ type Color = keyof typeof colors;
 export function color(message: any, color: Color = "reset") {
   const colorCode = colors[color] || colors.reset;
   return `${colorCode}${message.toString()}${colors.reset}`;
+}
+
+
+
+export async function generateQrcode(text: string) {
+  await qrcode.generate(text, { small: true });
 }

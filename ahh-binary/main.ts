@@ -2,7 +2,7 @@ import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { tunnel } from "./src/tunnel/main";
 import { createWebhookServer } from "./src/webhook/main";
-import { color, startSpinner } from "./src/utils/text";
+import { color, generateQrcode, startSpinner } from "./src/utils/text";
 import { openAuthenticatedWebhookDashboard } from "./src/utils/external";
 
 import {WORKSPACE_CHOICES} from "./src/workspace/choices";
@@ -33,6 +33,7 @@ const main = yargs(hideBin(Bun.argv))
       stopSpin();
       if (tunnelUrl) {
         console.info(`Tunnel URL: ${tunnelUrl}`);
+        await generateQrcode(tunnelUrl);
       }
     }
   )

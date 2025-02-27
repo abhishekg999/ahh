@@ -3,11 +3,10 @@
     "@elysiajs/cors": "^1.2.0",
     "@elysiajs/trpc": "^1.1.0",
     "@inquirer/prompts": "^7.3.2",
-    "@types/copy-paste": "^1.1.33",
-    "@types/pem": "^1.14.4",
     "copy-paste": "^1.5.3",
     "elysia": "^1.2.12",
     "pem": "^1.14.8",
+    "qrcode-terminal": "^0.12.0",
     "yargs": "^17.7.2",
     "zod": "^3.24.1"
   },
@@ -23,7 +22,10 @@
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/yargs": "^17.0.33"
+    "@types/yargs": "^17.0.33",
+    "@types/copy-paste": "^1.1.33",
+    "@types/pem": "^1.14.4",
+    "@types/qrcode-terminal": "^0.12.2"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
