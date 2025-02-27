@@ -54,5 +54,9 @@ jobs:
         with:
           files: ahh-binary/ahh-dist-linux.tar.gz
           tag_name: ${{ steps.tag.outputs.release_tag }}
+          fail_on_unmatched_files: false
+          draft: false
+          prerelease: false
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
