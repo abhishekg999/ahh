@@ -54,7 +54,7 @@ export default function Page() {
               </h1>
               <p className="mx-auto max-w-2xl text-base text-zinc-400 sm:text-lg">
                 <span className="text-zinc-300">
-                  Fast, reliable, and built for hackers.
+                  Fast, self-hostable, and always free.
                 </span>{" "}
                 Your essential toolkit for CTF challenges, designed to make
                 exploitation seamless.
