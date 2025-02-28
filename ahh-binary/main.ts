@@ -103,6 +103,10 @@ const main = yargs(hideBin(Bun.argv))
       await sendToDiscord(content, webhookUrl);
     }
   )
+  .command("qr", "Generate a QR code from stdin.", async () => {
+    const input = await getStdin();
+    await generateQrcode(input);
+  })
   .demandCommand(1, "You must specify a command.")
   .help()
   .strict()
