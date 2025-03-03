@@ -75,5 +75,9 @@ export function useWebhookSocket(token: string, webhookUrl: string) {
     }
   }, [connect, wsUrl]);
 
-  return { requests, isConnected, error };
+  const clearRequests = () => {
+    setRequests([]);
+  };
+
+  return { requests, clearRequests, isConnected, error };
 }

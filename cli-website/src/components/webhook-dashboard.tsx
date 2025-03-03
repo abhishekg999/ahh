@@ -44,7 +44,7 @@ export function WebhookDashboard() {
   );
   const [searchTerm, setSearchTerm] = useState("");
   const { token, webhookUrl } = useWebhookParams();
-  const { requests, isConnected } = useWebhookSocket(token, webhookUrl);
+  const { requests, clearRequests, isConnected } = useWebhookSocket(token, webhookUrl);
 
   const filteredRequests = requests.filter(
     (request) =>
@@ -80,9 +80,8 @@ export function WebhookDashboard() {
           <CommandList>
             <CommandEmpty>No results found.</CommandEmpty>
             <CommandGroup heading="Suggestions">
-              <CommandItem>Create new webhook</CommandItem>
-              <CommandItem>Copy webhook URL</CommandItem>
-              <CommandItem>Clear all requests</CommandItem>
+              <CommandItem onSelect={() => navigator.clipboard.writeText(webhookUrl)}>Copy webhook URL</CommandItem>
+              <CommandItem onSelect={clearRequests}>Clear all requests</CommandItem>
             </CommandGroup>
           </CommandList>
         </Command>
