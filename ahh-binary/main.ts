@@ -4,17 +4,20 @@ import { tunnel } from "./src/tunnel/main";
 import { createWebhookServer } from "./src/webhook/main";
 import { color, generateQrcode, startSpinner } from "./src/utils/text";
 import { openAuthenticatedWebhookDashboard } from "./src/utils/external";
-
 import {WORKSPACE_CHOICES} from "./src/workspace/choices";
 import { initWorkspace } from "./src/workspace/main";
 import { copyToClipboard } from "./src/clip/main";
 import { getConfig } from "./src/config/main";
 import { configureWebhook, selectWebhook, sendToDiscord } from "./src/share-discord/main";
 import { getStdin } from "./src/utils/fs";
+import { createSimpleServer } from "./src/serve/main";
+
+// Increment this version number when making changes to the CLI
+const VERSION = "1.0.1";
 
 const main = yargs(hideBin(Bun.argv))
   .scriptName("ahh")
-  .version("1.0.0")
+  .version(VERSION)
   .command(
     "tunnel",
     "Tunnel a local port publically using Cloudflare's free tunnel.",
@@ -36,7 +39,33 @@ const main = yargs(hideBin(Bun.argv))
         await generateQrcode(tunnelUrl);
       }
     }
-  )
+  ).hide("version")
+  .command(
+    "serve",
+    "Serve the current directory over HTTP.",
+    (yargs) =>
+      yargs.option("port", {
+        alias: "p",
+        type: "number",
+        description: "Port to run the server on",
+        default: 8000,
+      }),
+    async (argv) => {
+      const stopSpin = startSpinner(
+        "Starting server, this may take a second..."
+      );
+      const [, { url: tunnelUrl }] = await Promise.all([
+        createSimpleServer(argv.port),
+        tunnel(argv.port)
+      ]);      
+      stopSpin();
+
+      if (tunnelUrl) {
+        console.info(`URL: ${tunnelUrl}`);
+        await generateQrcode(tunnelUrl);
+      }
+    }
+  ).hide("version")
   .command("webhook", "Starts a webhook server.", async (argv) => {
     const { port, token } = await createWebhookServer(
       (await getConfig()).DEFAULT_WEBHOOK_HTTP_PORT,
@@ -52,7 +81,7 @@ const main = yargs(hideBin(Bun.argv))
       return;
     }
     await openAuthenticatedWebhookDashboard(token, tunnelUrl);
-  })
+  }).hide("version")
   .command(
     "workspace <name>",
     "Initialize a workspace.",
@@ -76,11 +105,11 @@ const main = yargs(hideBin(Bun.argv))
       stopSpin();
       console.log("Workspace initialized.");
     }
-  )
+  ).hide("version")
   .command("clip", "Copy any stdin to the clipboard.", async () => {
     const input = await getStdin();
     await copyToClipboard(input);
-  })
+  }).hide("version")
   .command(
     "share-discord",
     "Share content through Discord webhook",
@@ -102,11 +131,11 @@ const main = yargs(hideBin(Bun.argv))
       
       await sendToDiscord(content, webhookUrl);
     }
-  )
+  ).hide("version")
   .command("qr", "Generate a QR code from stdin.", async () => {
     const input = await getStdin();
     await generateQrcode(input);
-  })
+  }).hide("version")
   .demandCommand(1, "You must specify a command.")
   .help()
   .strict()
