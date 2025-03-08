@@ -1,6 +1,20 @@
 import { AHH_WEBHOOK_URL } from "../constants/main";
+import { isSupportedOS, OS } from "./os";
 
-const browser = process.env.BROWSER || "xdg-open";
+const DEFAULT_BROWSER = {
+  darwin: "open",
+  win32: "start",
+  linux: "xdg-open",
+} as const;
+
+function getDefaultBrowser() {
+  if (isSupportedOS(OS)) {
+    return DEFAULT_BROWSER[OS];
+  }
+  return DEFAULT_BROWSER.linux;
+}
+
+const browser = process.env.BROWSER || getDefaultBrowser();
 
 export async function openURLInBrowser(
   url: string,

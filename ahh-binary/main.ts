@@ -13,7 +13,7 @@ import { getStdin } from "./src/utils/fs";
 import { createSimpleServer } from "./src/serve/main";
 
 // Increment this version number when making changes to the CLI
-const VERSION = "1.0.1";
+const VERSION = "1.0.2";
 
 const main = yargs(hideBin(Bun.argv))
   .scriptName("ahh")
