@@ -1,17 +1,14 @@
-import { input, confirm, select, checkbox } from "@inquirer/prompts";
-import { getConfig, updateConfig } from "../config/main";
-import { color } from "../utils/text";
+import { checkbox, confirm, input, select } from "@inquirer/prompts";
+import { getConfig, updateConfig } from "../../config/main";
+import { color } from "../../utils/text";
 
-export async function sendToDiscord(
-  content: string,
-  webhookUrl: string
-) {
-  console.log(color('Preparing to send message to Discord...', 'blue'));
+export async function sendToDiscord(content: string, webhookUrl: string) {
+  console.log(color("Preparing to send message to Discord...", "blue"));
   const payload = { content };
-  console.log(color(`Message length: ${content.length} characters`, 'white'));
+  console.log(color(`Message length: ${content.length} characters`, "white"));
 
   try {
-    console.log(color('Sending to Discord...', 'yellow'));
+    console.log(color("Sending to Discord...", "yellow"));
     const response = await fetch(webhookUrl, {
       method: "POST",
       headers: {
@@ -23,9 +20,11 @@ export async function sendToDiscord(
     if (!response.ok) {
       throw new Error(`Discord API returned ${response.status}`);
     }
-    console.log(color('Successfully sent to Discord!', 'green'));
+    console.log(color("Successfully sent to Discord!", "green"));
   } catch (error) {
-    console.error(color(`Failed to send to Discord: ${(error as Error).message}`, 'red'));
+    console.error(
+      color(`Failed to send to Discord: ${(error as Error).message}`, "red")
+    );
     throw error;
   }
 }
@@ -33,9 +32,11 @@ export async function sendToDiscord(
 export async function configureWebhook(): Promise<void> {
   while (true) {
     const config = await getConfig();
-    const currentWebhooks = config.DISCORD_WEBHOOKS.map(w => ({
-      name: `${w.name}${w.name === config.DEFAULT_DISCORD_WEBHOOK ? ' (default)' : ''}`,
-      value: w.name
+    const currentWebhooks = config.DISCORD_WEBHOOKS.map((w) => ({
+      name: `${w.name}${
+        w.name === config.DEFAULT_DISCORD_WEBHOOK ? " (default)" : ""
+      }`,
+      value: w.name,
     }));
 
     const action = await select({
@@ -45,8 +46,8 @@ export async function configureWebhook(): Promise<void> {
         { name: "Add Webhook", value: "ADD" },
         { name: "Remove Webhook", value: "REMOVE" },
         { name: "Set Default", value: "DEFAULT" },
-        { name: "Exit", value: "EXIT" }
-      ]
+        { name: "Exit", value: "EXIT" },
+      ],
     });
 
     switch (action) {
@@ -55,8 +56,15 @@ export async function configureWebhook(): Promise<void> {
           console.log(color("No webhooks configured.", "yellow"));
         } else {
           console.log(color("\nConfigured Webhooks:", "blue"));
-          config.DISCORD_WEBHOOKS.forEach(w => {
-            console.log(color(`- ${w.name}${w.name === config.DEFAULT_DISCORD_WEBHOOK ? ' (default)' : ''}\n  URL: ${w.url}`, "white"));
+          config.DISCORD_WEBHOOKS.forEach((w) => {
+            console.log(
+              color(
+                `- ${w.name}${
+                  w.name === config.DEFAULT_DISCORD_WEBHOOK ? " (default)" : ""
+                }\n  URL: ${w.url}`,
+                "white"
+              )
+            );
           });
         }
         break;
@@ -65,27 +73,35 @@ export async function configureWebhook(): Promise<void> {
       case "ADD": {
         const name = await input({
           message: "Enter webhook name:",
-          validate: (value) => value.length > 0 ? true : "Name cannot be empty"
+          validate: (value) =>
+            value.length > 0 ? true : "Name cannot be empty",
         });
 
         const url = await input({
           message: "Enter Discord webhook URL:",
-          validate: (value) => 
-            value.startsWith("https://discord.com/api/webhooks/") 
-              ? true 
-              : "Invalid Discord webhook URL"
+          validate: (value) =>
+            value.startsWith("https://discord.com/api/webhooks/")
+              ? true
+              : "Invalid Discord webhook URL",
         });
 
         const makeDefault = await confirm({
           message: "Set as default webhook?",
-          default: false
+          default: false,
         });
 
         await addWebhook(name, url);
         if (makeDefault) {
           await setDefaultWebhook(name);
         }
-        console.log(color(`✓ Added webhook "${name}"${makeDefault ? ' and set as default' : ''}`, "green"));
+        console.log(
+          color(
+            `✓ Added webhook "${name}"${
+              makeDefault ? " and set as default" : ""
+            }`,
+            "green"
+          )
+        );
         break;
       }
 
@@ -97,20 +113,24 @@ export async function configureWebhook(): Promise<void> {
 
         const toRemove = await checkbox({
           message: "Select webhooks to remove:",
-          choices: currentWebhooks.map(w => ({
+          choices: currentWebhooks.map((w) => ({
             ...w,
-            value: w.value
-          }))
+            value: w.value,
+          })),
         });
 
         if (toRemove.length > 0) {
           await updateConfig({
-            DISCORD_WEBHOOKS: config.DISCORD_WEBHOOKS.filter(w => !toRemove.includes(w.name)),
+            DISCORD_WEBHOOKS: config.DISCORD_WEBHOOKS.filter(
+              (w) => !toRemove.includes(w.name)
+            ),
             ...(toRemove.includes(config.DEFAULT_DISCORD_WEBHOOK ?? "") && {
-              DEFAULT_DISCORD_WEBHOOK: undefined
-            })
+              DEFAULT_DISCORD_WEBHOOK: undefined,
+            }),
           });
-          console.log(color(`✓ Removed ${toRemove.length} webhook(s)`, "green"));
+          console.log(
+            color(`✓ Removed ${toRemove.length} webhook(s)`, "green")
+          );
         }
         break;
       }
@@ -123,14 +143,18 @@ export async function configureWebhook(): Promise<void> {
 
         const defaultChoice = await select({
           message: "Select default webhook:",
-          choices: [
-            ...currentWebhooks,
-            { name: "Clear default", value: null }
-          ]
+          choices: [...currentWebhooks, { name: "Clear default", value: null }],
         });
 
         await setDefaultWebhook(defaultChoice ?? undefined);
-        console.log(color(defaultChoice ? `✓ Set "${defaultChoice}" as default` : "✓ Cleared default webhook", "green"));
+        console.log(
+          color(
+            defaultChoice
+              ? `✓ Set "${defaultChoice}" as default`
+              : "✓ Cleared default webhook",
+            "green"
+          )
+        );
         break;
       }
 

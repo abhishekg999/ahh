@@ -1,11 +1,10 @@
-import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
-import { join } from "path";
-import { readFile } from "fs/promises";
-import { cwd } from "process";
-import mime from 'mime/lite';
+import { Elysia } from "elysia";
 import { existsSync } from "fs";
-
+import { readFile } from "fs/promises";
+import mime from "mime/lite";
+import { join } from "path";
+import { cwd } from "process";
 
 export async function createSimpleServer(port: number) {
   const server = new Elysia()
@@ -14,7 +13,7 @@ export async function createSimpleServer(port: number) {
       try {
         let pathname = new URL(ctx.request.url).pathname;
         let safePath = join(cwd(), pathname).replace(/\.\./g, "");
-        
+
         // Check if the path is a directory
         if (pathname.endsWith("/")) {
           const indexPath = join(safePath, "index.html");
@@ -28,7 +27,8 @@ export async function createSimpleServer(port: number) {
         }
 
         const file = await readFile(safePath);
-        const contentType = mime.getType(safePath) || "application/octet-stream";
+        const contentType =
+          mime.getType(safePath) || "application/octet-stream";
 
         return new Response(file, {
           headers: {

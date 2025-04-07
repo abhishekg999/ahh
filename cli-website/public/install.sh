@@ -39,48 +39,54 @@ rm -f "$install_dir/$archive_name"
 chmod +x "$exe"
 
 # Generate completion script
-AHH_COMPLETIONS=1=1 "$exe" > "$install_dir/_ahh"
+AHH_COMPLETIONS=1 "$exe" > "$install_dir/_ahh"
+
 
 add_to_path() {
-  local shell_config
+  local shell_config=""
+  local shell_type=$(basename "$SHELL")
 
-  # Then add the required lines to the shell config file
-
-  case $(basename "$SHELL") in
+  case "$shell_type" in
     fish)
       shell_config="$HOME/.config/fish/config.fish"
-      echo -e "\n" >> "$shell_config"
-      echo -e "# ahh" >> "$shell_config"
-      echo -e "set -g -x AHH_HOME \"$install_dir\"" >> "$shell_config"
-      echo -e "set -g -x PATH $bin_dir \$PATH" >> "$shell_config"
-      echo -e "# ahh completions" >> "$shell_config"
-      echo -e "[ -s \"$install_dir/_ahh\" ] && source \"$install_dir/_ahh\"" >> "$shell_config"
       ;;
     zsh)
       shell_config="$HOME/.zshrc"
-      echo -e "\n" >> "$shell_config"
-      echo -e "# ahh" >> "$shell_config"
-      echo -e "export AHH_HOME=\"$install_dir\"" >> "$shell_config"
-      echo -e "export PATH=\"$bin_dir:\$PATH\"" >> "$shell_config"
-      echo -e "# ahh completions" >> "$shell_config"
-      echo -e "[ -s \"$install_dir/_ahh\" ] && source \"$install_dir/_ahh\"" >> "$shell_config"
       ;;
     bash)
       shell_config="$HOME/.bashrc"
-      echo -e "\n" >> "$shell_config"
-      echo -e "# ahh" >> "$shell_config"
-      echo -e "export AHH_HOME=\"$install_dir\"" >> "$shell_config"
-      echo -e "export PATH=\"$bin_dir:\$PATH\"" >> "$shell_config"
-      echo -e "# ahh completions" >> "$shell_config"
-      echo -e "[ -s \"$install_dir/_ahh\" ] && source \"$install_dir/_ahh\"" >> "$shell_config"
       ;;
     *)
+      echo -e "${YELLOW}Unsupported shell: $shell_type${RESET}"
       echo -e "${YELLOW}Manually add the following to your shell config file:${RESET}"
       echo -e "  export AHH_HOME=\"$install_dir\""
       echo -e "  export PATH=\"$bin_dir:\$PATH\""
       echo -e "  [ -s \"$install_dir/_ahh\" ] && source \"$install_dir/_ahh\""
+      return
       ;;
   esac
+
+  # Check if already configured
+  if grep -q "# ahh" "$shell_config" && grep -q "# ahh completions" "$shell_config"; then
+    echo -e "${YELLOW}ahh CLI is already configured in your shell config file.${RESET}"
+    return
+  fi
+
+  # Add configuration to shell config
+  echo -e "\n" >> "$shell_config"
+  echo -e "# ahh" >> "$shell_config"
+  
+  # Shell-specific environment variable syntax
+  if [ "$shell_type" = "fish" ]; then
+    echo -e "set -g -x AHH_HOME \"$install_dir\"" >> "$shell_config"
+    echo -e "set -g -x PATH $bin_dir \$PATH" >> "$shell_config"
+  else
+    echo -e "export AHH_HOME=\"$install_dir\"" >> "$shell_config"
+    echo -e "export PATH=\"$bin_dir:\$PATH\"" >> "$shell_config"
+  fi
+  
+  echo -e "# ahh completions" >> "$shell_config"
+  echo -e "[ -s \"$install_dir/_ahh\" ] && source \"$install_dir/_ahh\"" >> "$shell_config"
 }
 
 add_to_path

@@ -1,12 +1,13 @@
 import { exists, resource } from "../utils/fs";
 import { customAppConfig, DefaultAppConfig, type AppConfig } from "./types";
 
-
 const ConfigFile = resource("ahh.config.json");
 export async function loadConfig(): Promise<AppConfig> {
   try {
     if (!(await exists(ConfigFile))) {
-      await Bun.file(ConfigFile).write(JSON.stringify(DefaultAppConfig, null, 2));
+      await Bun.file(ConfigFile).write(
+        JSON.stringify(DefaultAppConfig, null, 2)
+      );
       console.info(`Config not found. Creating at ${ConfigFile}`);
       return DefaultAppConfig;
     }
