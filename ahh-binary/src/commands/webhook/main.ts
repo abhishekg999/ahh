@@ -1,7 +1,7 @@
-import type { ElysiaWS } from "elysia/ws";
-import { Elysia } from "elysia";
 import { cors } from "@elysiajs/cors";
 import { randomUUID } from "crypto";
+import { Elysia } from "elysia";
+import type { ElysiaWS } from "elysia/ws";
 
 function filterHeaders(headers: Record<string, string | undefined>) {
   const result: Record<string, string | undefined> = {};

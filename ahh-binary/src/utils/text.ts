@@ -34,8 +34,6 @@ export function color(message: any, color: Color = "reset") {
   return `${colorCode}${message.toString()}${colors.reset}`;
 }
 
-
-
 export async function generateQrcode(text: string) {
   await qrcode.generate(text, { small: true });
 }
