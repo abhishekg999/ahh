@@ -24,7 +24,7 @@ import { isSemver, semverCompare } from "./src/utils/semver";
 import { color, generateQrcode, startSpinner } from "./src/utils/text";
 
 // Increment this version number when making changes to the CLI
-const VERSION = "1.0.3";
+const VERSION = "1.0.4";
 
 const main = yargs(hideBin(Bun.argv))
   .scriptName("ahh")
@@ -199,13 +199,6 @@ const main = yargs(hideBin(Bun.argv))
     if (result.exitCode !== 0) {
       return doError();
     }
-
-    console.info(
-      color(
-        `Update complete. Please restart your terminal to use the new version.`,
-        "green"
-      )
-    );
   })
   .hide("version")
   .demandCommand(1, "You must specify a command.")
