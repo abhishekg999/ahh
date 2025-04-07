@@ -170,7 +170,8 @@ const main = yargs(hideBin(Bun.argv))
     if (!location) {
       return doError();
     }
-    const latestVersion = location.split("tag/ahh_v")[1];
+    const versionMatch = location.match(/tag\/ahh_v(\d+\.\d+\.\d+)/);
+    const latestVersion = versionMatch ? versionMatch[1] : null;
     if (!latestVersion) {
       return doError();
     }
