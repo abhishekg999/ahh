@@ -2,6 +2,24 @@ import { $ } from "bun";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 import { copyToClipboard } from "./src/commands/clip/main";
+import {
+  addFiles,
+  commitChanges,
+  getMonoRepoStatus,
+  pullChanges,
+  pushChanges,
+  switchBranch,
+} from "./src/commands/mgit/main";
+import {
+  addModule,
+  checkMonoRepo,
+  initMonoRepo,
+  linkFiles,
+  listModules,
+  removeModule,
+  withBranchValidation,
+} from "./src/commands/mono/main";
+import { writeQRCode } from "./src/commands/qr/main";
 import { createSimpleServer } from "./src/commands/serve/main";
 import {
   configureWebhook,
@@ -23,8 +41,7 @@ import { getStdin } from "./src/utils/fs";
 import { isSemver, semverCompare } from "./src/utils/semver";
 import { color, generateQrcode, startSpinner } from "./src/utils/text";
 
-// Increment this version number when making changes to the CLI
-const VERSION = "1.0.4";
+const VERSION = "1.0.5";
 
 const main = yargs(hideBin(Bun.argv))
   .scriptName("ahh")
@@ -151,7 +168,7 @@ const main = yargs(hideBin(Bun.argv))
   .hide("version")
   .command("qr", "Generate a QR code from stdin.", async () => {
     const input = await getStdin();
-    await generateQrcode(input);
+    await writeQRCode(input);
   })
   .hide("version")
   .command("update", "Update the CLI.", async () => {
@@ -199,6 +216,242 @@ const main = yargs(hideBin(Bun.argv))
     if (result.exitCode !== 0) {
       return doError();
     }
+  })
+  .hide("version")
+  .command("mono", "Manage the virtual mono repo.", (yargs) => {
+    return yargs
+      .command(
+        "init",
+        "Initialize a virtual mono repo.",
+        (yargs) =>
+          yargs
+            .option("name", {
+              alias: "n",
+              type: "string",
+              description: "Name of the mono repo",
+            })
+            .option("path", {
+              alias: "p",
+              type: "string",
+              description: "Path where to initialize the mono repo",
+              default: ".",
+            }),
+        async (argv) => {
+          try {
+            await initMonoRepo(argv.path, argv.name);
+          } catch (error) {
+            console.error(color(`Error: ${(error as Error).message}`, "red"));
+          }
+        }
+      )
+      .command(
+        "add",
+        "Add a module to the mono repo.",
+        (yargs) =>
+          yargs
+            .option("path", {
+              alias: "p",
+              type: "string",
+              description: "Path to the module",
+              demandOption: true,
+            })
+            .option("name", {
+              alias: "n",
+              type: "string",
+              description: "Name of the module",
+            })
+            .option("description", {
+              alias: "d",
+              type: "string",
+              description: "Description of the module",
+            }),
+        async (argv) => {
+          try {
+            await withBranchValidation(async () => {
+              await addModule(argv.path, argv.name, argv.description);
+            });
+          } catch (error) {
+            console.error(color(`Error: ${(error as Error).message}`, "red"));
+          }
+        }
+      )
+      .command(
+        "remove",
+        "Remove a module from the mono repo.",
+        (yargs) =>
+          yargs.option("name", {
+            alias: "n",
+            type: "string",
+            description: "Name of the module to remove",
+            demandOption: true,
+          }),
+        async (argv) => {
+          try {
+            await withBranchValidation(async () => {
+              await removeModule(argv.name);
+            });
+          } catch (error) {
+            console.error(color(`Error: ${(error as Error).message}`, "red"));
+          }
+        }
+      )
+      .command("list", "List all modules in the mono repo.", {}, async () => {
+        try {
+          await withBranchValidation(async () => {
+            await listModules();
+          });
+        } catch (error) {
+          console.error(color(`Error: ${(error as Error).message}`, "red"));
+        }
+      })
+      .command(
+        "link [files..]",
+        "Link files between modules in the mono repo",
+        (yargs) =>
+          yargs
+            .positional("files", {
+              type: "string",
+              array: true,
+              description:
+                "Files to link (first file is source, rest are targets)",
+            })
+            .example(
+              "ahh mono link file1 file2",
+              "Link file1 to file2 (first file is source, rest are targets)"
+            )
+            .example(
+              "ahh mono link file1 file2 file3 file4",
+              "Link multiple files to the source file"
+            ),
+        async (argv) => {
+          try {
+            await withBranchValidation(async () => {
+              const filePaths = argv.files as string[];
+
+              if (!filePaths || filePaths.length < 2) {
+                console.log(
+                  color("You must provide at least two files to link", "yellow")
+                );
+                console.log(
+                  color(
+                    "Usage: ahh mono link <source> <target1> [<target2> ...]",
+                    "blue"
+                  )
+                );
+                return;
+              }
+
+              await linkFiles(filePaths);
+            });
+          } catch (error) {
+            console.error(color(`Error: ${(error as Error).message}`, "red"));
+          }
+        }
+      )
+      .command(
+        "check",
+        "Check and fix mono repo configuration and links",
+        {},
+        async () => {
+          try {
+            await withBranchValidation(async () => {
+              await checkMonoRepo();
+            });
+          } catch (error) {
+            console.error(color(`Error: ${(error as Error).message}`, "red"));
+          }
+        }
+      );
+  })
+  .hide("version")
+  .command("mgit", "Git client for the virtual mono repo.", (yargs) => {
+    return yargs
+      .command(
+        "status",
+        "Show git status for all modules in the monorepo",
+        {},
+        async () => {
+          try {
+            await getMonoRepoStatus();
+          } catch (error) {
+            console.error(color(`Error: ${(error as Error).message}`, "red"));
+          }
+        }
+      )
+      .command(
+        "add",
+        "Add all changes to git in the monorepo",
+        {},
+        async () => {
+          try {
+            await addFiles();
+          } catch (error) {
+            console.error(color(`Error: ${(error as Error).message}`, "red"));
+          }
+        }
+      )
+      .command(
+        ["checkout <branch>", "switch <branch>"],
+        "Switch branches across all repositories in the monorepo",
+        (yargs) =>
+          yargs
+            .positional("branch", {
+              describe: "Branch name to switch to",
+              type: "string",
+              demandOption: true,
+            })
+            .option("b", {
+              alias: "create",
+              describe: "Create a new branch",
+              type: "boolean",
+              default: false,
+            }),
+        async (argv) => {
+          try {
+            await switchBranch(argv.branch as string, Boolean(argv.b));
+          } catch (error) {
+            console.error(color(`Error: ${(error as Error).message}`, "red"));
+          }
+        }
+      )
+      .command(
+        "commit",
+        "Commit changes across all repositories in the monorepo",
+        (yargs) =>
+          yargs.option("m", {
+            alias: "message",
+            describe: "Commit message",
+            type: "string",
+          }),
+        async (argv) => {
+          try {
+            await commitChanges((argv.m as string) || "");
+          } catch (error) {
+            console.error(color(`Error: ${(error as Error).message}`, "red"));
+          }
+        }
+      )
+      .command("push", "Push changes to remote repositories", {}, async () => {
+        try {
+          await pushChanges();
+        } catch (error) {
+          console.error(color(`Error: ${(error as Error).message}`, "red"));
+        }
+      })
+      .command(
+        "pull",
+        "Pull changes from remote repositories",
+        {},
+        async () => {
+          try {
+            await pullChanges();
+          } catch (error) {
+            console.error(color(`Error: ${(error as Error).message}`, "red"));
+          }
+        }
+      )
+      .demandCommand(1, "You must specify a git command")
+      .help();
   })
   .hide("version")
   .demandCommand(1, "You must specify a command.")
