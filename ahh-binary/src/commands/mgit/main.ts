@@ -6,12 +6,10 @@ import { exists } from "../../utils/fs";
 import { findMonoRepoRoot, resolvePath } from "../../utils/path";
 import { color } from "../../utils/text";
 
-// Constants for mono state management
 const META_GIT_DIR = ".git";
 const META_CONFIG_FILENAME = ".ahh.virtual.monorepo.json";
 const META_GITIGNORE = ".gitignore";
 
-// Type definitions for mono repo
 interface MonoModule {
   name: string;
   path: string;
@@ -120,9 +118,7 @@ async function saveMonoRepoConfig(
   try {
     await $`cd ${rootDir} && git add ${META_CONFIG_FILENAME}`.quiet();
     await $`cd ${rootDir} && git commit -m "Update monorepo configuration"`.quiet();
-  } catch (error) {
-    // Ignore commit errors - might not have changes
-  }
+  } catch (error) {}
 }
 
 export async function addFiles(): Promise<void> {
@@ -167,16 +163,22 @@ async function processRepoAdd(
     }
 
     try {
-      const { exitCode, stderr } = await $`cd ${repoPath} && git add .`
-        .quiet()
-        .nothrow();
-      if (exitCode !== 0) {
-        console.error(
-          color(`⚠ Error adding changes in ${repoName}: ${stderr}`, "red")
-        );
+      console.log(color(`\nRunning 'git add .' in ${repoName}...`, "blue"));
+      const result = await $`cd ${repoPath} && git add .`.nothrow();
+
+      if (result.exitCode !== 0) {
+        console.error(color(`⚠ Error adding changes in ${repoName}:`, "red"));
+        if (result.stderr) {
+          console.error(result.stderr);
+        }
         results.errors++;
         return;
       }
+
+      if (result.stdout && result.stdout.toString("utf8")) {
+        console.log(result.stdout.toString("utf8"));
+      }
+
       console.log(color(`✓ Added changes in ${repoName}`, "green"));
       results.success++;
     } catch (error) {
@@ -217,21 +219,26 @@ export async function switchBranch(
   );
 
   try {
+    console.log(color(`\nRunning git checkout in meta repository...`, "blue"));
     const command = createBranch
       ? $`cd ${rootDir} && git checkout -b ${branchName}`
       : $`cd ${rootDir} && git checkout ${branchName}`;
 
-    const { exitCode, stderr } = await command.quiet().nothrow();
+    const result = await command.nothrow();
 
-    if (exitCode === 0) {
+    if (result.exitCode === 0) {
+      if (result.stdout && result.stdout.toString("utf8")) {
+        console.log(result.stdout.toString("utf8"));
+      }
       console.log(
         color(`✓ Switched meta repository to '${branchName}'`, "green")
       );
       success++;
     } else {
-      console.error(
-        color(`Failed to switch meta repository: ${stderr}`, "red")
-      );
+      console.error(color(`Failed to switch meta repository:`, "red"));
+      if (result.stderr) {
+        console.error(result.stderr);
+      }
       errors++;
     }
   } catch (error) {
@@ -255,21 +262,26 @@ export async function switchBranch(
         continue;
       }
 
+      console.log(color(`\nRunning git checkout in ${module.name}...`, "blue"));
       const command = createBranch
         ? $`cd ${module.absolutePath} && git checkout -b ${branchName}`
         : $`cd ${module.absolutePath} && git checkout ${branchName}`;
 
-      const { exitCode, stderr } = await command.quiet().nothrow();
+      const result = await command.nothrow();
 
-      if (exitCode === 0) {
+      if (result.exitCode === 0) {
+        if (result.stdout && result.stdout.toString("utf8")) {
+          console.log(result.stdout.toString("utf8"));
+        }
         console.log(
           color(`✓ Switched ${module.name} to '${branchName}'`, "green")
         );
         success++;
       } else {
-        console.error(
-          color(`Failed to switch ${module.name}: ${stderr}`, "red")
-        );
+        console.error(color(`Failed to switch ${module.name}:`, "red"));
+        if (result.stderr) {
+          console.error(result.stderr);
+        }
         errors++;
       }
     } catch (error) {
@@ -313,15 +325,21 @@ export async function commitChanges(message: string): Promise<void> {
       .text();
 
     if (hasChanges.trim()) {
-      const { exitCode, stderr } =
-        await $`cd ${rootDir} && git commit -m ${message}`.quiet().nothrow();
-      if (exitCode === 0) {
+      console.log(color(`\nRunning git commit in meta repository...`, "blue"));
+      const result =
+        await $`cd ${rootDir} && git commit -m ${message}`.nothrow();
+
+      if (result.exitCode === 0) {
+        if (result.stdout && result.stdout.toString("utf8")) {
+          console.log(result.stdout.toString("utf8"));
+        }
         console.log(color(`✓ Committed changes in meta repository`, "green"));
         success++;
       } else {
-        console.error(
-          color(`Failed to commit meta repository: ${stderr}`, "red")
-        );
+        console.error(color(`Failed to commit meta repository:`, "red"));
+        if (result.stderr) {
+          console.error(result.stderr);
+        }
         errors++;
       }
     } else {
@@ -355,17 +373,21 @@ export async function commitChanges(message: string): Promise<void> {
           .text();
 
       if (hasChanges.trim()) {
-        const { exitCode, stderr } =
-          await $`cd ${module.absolutePath} && git commit -m ${message}`
-            .quiet()
-            .nothrow();
-        if (exitCode === 0) {
+        console.log(color(`\nRunning git commit in ${module.name}...`, "blue"));
+        const result =
+          await $`cd ${module.absolutePath} && git commit -m ${message}`.nothrow();
+
+        if (result.exitCode === 0) {
+          if (result.stdout && result.stdout.toString("utf8")) {
+            console.log(result.stdout.toString("utf8"));
+          }
           console.log(color(`✓ Committed changes in ${module.name}`, "green"));
           success++;
         } else {
-          console.error(
-            color(`Failed to commit ${module.name}: ${stderr}`, "red")
-          );
+          console.error(color(`Failed to commit ${module.name}:`, "red"));
+          if (result.stderr) {
+            console.error(result.stderr);
+          }
           errors++;
         }
       } else {
@@ -448,20 +470,20 @@ export async function pushChanges(): Promise<void> {
           .quiet()
           .text();
 
+      console.log(color(`\nRunning git push in ${module.name}...`, "blue"));
       let result;
       if (hasUpstream.trim()) {
         result =
-          await $`cd ${module.absolutePath} && git push origin ${currentBranch}`
-            .quiet()
-            .nothrow();
+          await $`cd ${module.absolutePath} && git push origin ${currentBranch}`.nothrow();
       } else {
         result =
-          await $`cd ${module.absolutePath} && git push --set-upstream origin ${currentBranch}`
-            .quiet()
-            .nothrow();
+          await $`cd ${module.absolutePath} && git push --set-upstream origin ${currentBranch}`.nothrow();
       }
 
       if (result.exitCode === 0) {
+        if (result.stdout && result.stdout.toString("utf8")) {
+          console.log(result.stdout.toString("utf8"));
+        }
         console.log(
           color(
             `✓ Pushed changes from ${module.name} to origin/${currentBranch}`,
@@ -470,9 +492,10 @@ export async function pushChanges(): Promise<void> {
         );
         success++;
       } else {
-        console.error(
-          color(`Failed to push ${module.name}: ${result.stderr}`, "red")
-        );
+        console.error(color(`Failed to push ${module.name}:`, "red"));
+        if (result.stderr) {
+          console.error(result.stderr);
+        }
         errors++;
       }
     } catch (error) {
@@ -504,11 +527,20 @@ export async function getMonoRepoStatus(): Promise<void> {
   console.log(color(`Branch: ${config.metaBranch || "unknown"}`, "white"));
 
   try {
-    const metaStatus = await $`cd ${rootDir} && git status -s`.quiet().text();
-    if (metaStatus.trim()) {
-      console.log(metaStatus.trim());
+    console.log(color(`\nRunning git status in meta repository...`, "blue"));
+    const result = await $`cd ${rootDir} && git status`.nothrow();
+
+    if (result.exitCode === 0) {
+      if (result.stdout && result.stdout.toString("utf8")) {
+        console.log(result.stdout.toString("utf8"));
+      } else {
+        console.log(color("No output from git status", "yellow"));
+      }
     } else {
-      console.log(color("No changes", "green"));
+      console.error(color(`Failed to get meta repository status:`, "red"));
+      if (result.stderr) {
+        console.error(result.stderr);
+      }
     }
   } catch (error) {
     console.error(
@@ -537,13 +569,20 @@ export async function getMonoRepoStatus(): Promise<void> {
         "unknown";
       console.log(color(`Branch: ${branch}`, "white"));
 
-      const status = await $`cd ${module.absolutePath} && git status -s`
-        .quiet()
-        .text();
-      if (status.trim()) {
-        console.log(status.trim());
+      console.log(color(`\nRunning git status in ${module.name}...`, "blue"));
+      const result = await $`cd ${module.absolutePath} && git status`.nothrow();
+
+      if (result.exitCode === 0) {
+        if (result.stdout && result.stdout.toString("utf8")) {
+          console.log(result.stdout.toString("utf8"));
+        } else {
+          console.log(color("No output from git status", "yellow"));
+        }
       } else {
-        console.log(color("No changes", "green"));
+        console.error(color(`Failed to get status for ${module.name}:`, "red"));
+        if (result.stderr) {
+          console.error(result.stderr);
+        }
       }
     } catch (error) {
       console.error(
@@ -647,13 +686,21 @@ export async function pullChanges(): Promise<void> {
         continue;
       }
 
-      const { exitCode, stderr } =
-        await $`cd ${module.absolutePath} && git pull origin`.quiet().nothrow();
-      if (exitCode === 0) {
+      console.log(color(`\nRunning git pull in ${module.name}...`, "blue"));
+      const result =
+        await $`cd ${module.absolutePath} && git pull origin`.nothrow();
+
+      if (result.exitCode === 0) {
+        if (result.stdout && result.stdout.toString("utf8")) {
+          console.log(result.stdout.toString("utf8"));
+        }
         console.log(color(`✓ Pulled changes for ${module.name}`, "green"));
         success++;
       } else {
-        console.error(color(`Failed to pull ${module.name}: ${stderr}`, "red"));
+        console.error(color(`Failed to pull ${module.name}:`, "red"));
+        if (result.stderr) {
+          console.error(result.stderr);
+        }
         errors++;
       }
     } catch (error) {

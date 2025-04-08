@@ -1,4 +1,4 @@
-import { input } from "@inquirer/prompts";
+import { input, select } from "@inquirer/prompts";
 import fs from "fs/promises";
 import path from "path";
 import { exists, mkdirAlways } from "../../utils/fs";
@@ -10,30 +10,27 @@ import {
 import { color } from "../../utils/text";
 import { initMetaRepository, validateBranchConsistency } from "../mgit/main";
 
-// Constant for mono repo configuration file name
 const MONO_CONFIG_FILENAME = ".ahh.virtual.monorepo.json";
 const MONO_LINKS_DIR = ".ahh-links";
 const MONO_LOCKFILE = ".ahh.lockfile";
 
-// Type definitions for mono repo
 interface MonoModule {
   name: string;
-  path: string; // Stored as relative path to the mono repo root
-  absolutePath?: string; // Not stored, used at runtime
+  path: string;
+  absolutePath?: string;
   description?: string;
 }
 
-// Track linked files
 interface LinkedFile {
   source: {
     module: string;
-    path: string; // Path relative to module
+    path: string;
   };
   targets: Array<{
     module: string;
-    path: string; // Path relative to module
+    path: string;
   }>;
-  masterCopy: string; // Path relative to links directory
+  masterCopy: string;
 }
 
 interface MonoConfig {
@@ -43,16 +40,20 @@ interface MonoConfig {
   links: LinkedFile[];
 }
 
+enum PathType {
+  FILE,
+  DIRECTORY,
+  NOT_EXIST,
+}
+
 /**
  * Initialize a new mono repo in the specified directory
  */
 export async function initMonoRepo(targetDir: string = ".", name: string = "") {
   const resolvedDir = resolvePath(targetDir);
 
-  // Check if directory exists, create if not
   await mkdirAlways(resolvedDir);
 
-  // Check if this directory is already in a mono repo
   const parentMonoRoot = await findMonoRepoRoot(resolvedDir);
   if (parentMonoRoot) {
     throw new Error(
@@ -60,17 +61,14 @@ export async function initMonoRepo(targetDir: string = ".", name: string = "") {
     );
   }
 
-  // Create config file path
   const configFilePath = path.join(resolvedDir, MONO_CONFIG_FILENAME);
 
-  // Check if config already exists
   if (await exists(configFilePath)) {
     throw new Error(
       `Mono repo already initialized in this directory: ${resolvedDir}`
     );
   }
 
-  // Prompt for name if not provided
   if (!name) {
     name = await input({
       message: "Enter monorepo name:",
@@ -89,36 +87,27 @@ export async function initMonoRepo(targetDir: string = ".", name: string = "") {
     links: [],
   };
 
-  // Create links directory
   const linksDir = path.join(resolvedDir, MONO_LINKS_DIR);
   await mkdirAlways(linksDir);
 
-  // Create lockfile
   const lockFilePath = path.join(resolvedDir, MONO_LOCKFILE);
   await fs.writeFile(lockFilePath, JSON.stringify({ locked: false }, null, 2));
 
-  // Save config
   await fs.writeFile(configFilePath, JSON.stringify(config, null, 2));
 
-  // Initialize meta Git repository to track the mono repo configuration
   const metaRepoInitialized = await initMetaRepository(resolvedDir);
 
-  // Update .gitignore to exclude links directory but include the lockfile
   const gitignorePath = path.join(resolvedDir, ".gitignore");
   let gitignoreContent = "";
 
   try {
     gitignoreContent = await fs.readFile(gitignorePath, "utf-8");
-  } catch (error) {
-    // File doesn't exist, create a new one
-  }
+  } catch (error) {}
 
-  // Make sure links directory is excluded
   if (!gitignoreContent.includes(MONO_LINKS_DIR)) {
     gitignoreContent += `\n# Ahh monorepo links directory\n${MONO_LINKS_DIR}\n`;
   }
 
-  // Make sure lockfile is not excluded
   if (!gitignoreContent.includes(MONO_LOCKFILE)) {
     gitignoreContent += `\n# Ahh monorepo lockfile\n!${MONO_LOCKFILE}\n`;
   }
@@ -156,40 +145,28 @@ export async function initMonoRepo(targetDir: string = ".", name: string = "") {
 async function acquireLock(rootDir: string): Promise<() => Promise<void>> {
   const lockFilePath = path.join(rootDir, MONO_LOCKFILE);
 
-  // Read lock file
   let lockData;
   try {
     const lockContent = await fs.readFile(lockFilePath, "utf-8");
     lockData = JSON.parse(lockContent);
   } catch (error) {
-    // Create a new lock file if it doesn't exist
     lockData = { locked: false };
   }
 
-  // Check if locked
   if (lockData.locked) {
     throw new Error("Monorepo is locked by another process. Try again later.");
   }
 
-  // Acquire lock
   lockData.locked = true;
   lockData.timestamp = new Date().toISOString();
   lockData.pid = process.pid;
 
   await fs.writeFile(lockFilePath, JSON.stringify(lockData, null, 2));
 
-  // Return release function
   return async () => {
     lockData.locked = false;
     await fs.writeFile(lockFilePath, JSON.stringify(lockData, null, 2));
   };
-}
-
-/**
- * Check if mono repo is initialized in the current directory or ancestors
- */
-export async function isMonoInitialized(): Promise<boolean> {
-  return (await findMonoRepoRoot()) !== null;
 }
 
 /**
@@ -211,7 +188,6 @@ export async function loadMonoConfig(): Promise<{
   try {
     config = JSON.parse(configData) as MonoConfig;
 
-    // Add links array if it doesn't exist (for backward compatibility)
     if (!config.links) {
       config.links = [];
     }
@@ -221,7 +197,6 @@ export async function loadMonoConfig(): Promise<{
     );
   }
 
-  // Resolve relative paths to absolute paths for easier use in the program
   for (const module of config.modules) {
     module.absolutePath = path.resolve(rootDir, module.path);
   }
@@ -238,7 +213,6 @@ export async function saveMonoConfig(config: MonoConfig): Promise<void> {
     throw new Error("Mono repo not initialized. Run 'ahh mono init' first.");
   }
 
-  // We don't want to save absolutePath
   const configToSave = { ...config };
   configToSave.modules = config.modules.map((module) => {
     const { absolutePath, ...rest } = module;
@@ -259,38 +233,31 @@ export async function addModule(
 ) {
   const { config, rootDir } = await loadMonoConfig();
 
-  // Resolve the full path
   const fullPath = resolvePath(modulePath);
 
-  // Check if module exists
   if (!(await exists(fullPath))) {
     throw new Error(`Module path does not exist: ${fullPath}`);
   }
 
-  // Use directory name as module name if not provided
   if (!name) {
     name = path.basename(fullPath);
   }
 
-  // Check if module already exists
   if (config.modules.some((m) => m.name === name)) {
     throw new Error(
       `Module with name '${name}' already exists in the mono repo`
     );
   }
 
-  // Convert to relative path from mono repo root
   const relativePath = createRelativePath(rootDir, fullPath);
 
-  // Add module to configuration
   config.modules.push({
     name,
-    path: relativePath, // Store as relative path
-    absolutePath: fullPath, // For runtime usage
+    path: relativePath,
+    absolutePath: fullPath,
     description,
   });
 
-  // Save configuration
   await saveMonoConfig(config);
 
   console.log(color(`✓ Module '${name}' added to mono repo`, "green"));
@@ -302,17 +269,14 @@ export async function addModule(
 export async function removeModule(moduleName: string) {
   const { config } = await loadMonoConfig();
 
-  // Find module index
   const index = config.modules.findIndex((m) => m.name === moduleName);
 
   if (index === -1) {
     throw new Error(`Module '${moduleName}' not found in mono repo`);
   }
 
-  // Remove module
   config.modules.splice(index, 1);
 
-  // Save configuration
   await saveMonoConfig(config);
 
   console.log(
@@ -339,101 +303,227 @@ function findModuleNameForPath(
 }
 
 /**
- * Direct link between files or directories across modules
+ * Get path type (file, directory, or not exist)
  */
-export async function directLink(
-  sourcePath: string,
-  targetPath: string
-): Promise<void> {
-  // Load mono repo config
-  const { config, rootDir } = await loadMonoConfig();
+async function getPathType(filePath: string): Promise<PathType> {
+  try {
+    const stat = await fs.stat(filePath);
+    return stat.isDirectory() ? PathType.DIRECTORY : PathType.FILE;
+  } catch (error) {
+    return PathType.NOT_EXIST;
+  }
+}
 
-  // Get links directory
+/**
+ * Link files or directories between modules in the mono repo
+ * This consolidated function is the main entry point for linking paths
+ */
+export async function linkFiles(filePaths: string[]): Promise<void> {
+  if (filePaths.length < 2) {
+    console.error(color("Need at least two paths to link", "red"));
+    return;
+  }
+
+  const { config, rootDir } = await loadMonoConfig();
   const linksDir = path.join(rootDir, MONO_LINKS_DIR);
   await mkdirAlways(linksDir);
 
-  // Resolve full paths
-  const sourceFullPath = resolvePath(sourcePath);
-  const targetFullPath = resolvePath(targetPath);
+  const resolvedPaths = await Promise.all(
+    filePaths.map(async (p) => {
+      const fullPath = resolvePath(p);
+      const pathType = await getPathType(fullPath);
 
-  // Find which modules these paths belong to
-  const sourceInfo = await getRelativePathInModule(sourceFullPath);
-  const targetInfo = await getRelativePathInModule(targetFullPath);
+      return {
+        original: p,
+        fullPath,
+        pathType,
+        moduleInfo: await getRelativePathInModule(fullPath),
+      };
+    })
+  );
 
-  if (!sourceInfo) {
-    throw new Error(
-      `Source path ${sourcePath} is not in any module of the mono repo`
+  const nonExistingPaths = resolvedPaths.filter(
+    (p) => p.pathType === PathType.NOT_EXIST
+  );
+  if (nonExistingPaths.length > 0) {
+    console.error(color("The following paths do not exist:", "red"));
+    nonExistingPaths.forEach((p) => {
+      console.error(color(`  - ${p.original}`, "red"));
+    });
+    return;
+  }
+
+  const nonMonoPaths = resolvedPaths.filter((p) => !p.moduleInfo);
+  if (nonMonoPaths.length > 0) {
+    console.error(
+      color(
+        "The following paths are not in any module of the mono repo:",
+        "red"
+      )
     );
+    nonMonoPaths.forEach((p) => {
+      console.error(color(`  - ${p.original}`, "red"));
+    });
+    return;
   }
 
-  if (!targetInfo) {
-    throw new Error(
-      `Target path ${targetPath} is not in any module of the mono repo`
+  const fileTypes = new Set(resolvedPaths.map((p) => p.pathType));
+
+  let primaryPathType: PathType;
+
+  if (fileTypes.size > 1) {
+    console.log(
+      color("Mixed file types detected (files and directories).", "yellow")
     );
-  }
 
-  // Validate source path exists
-  if (!(await exists(sourceFullPath))) {
-    throw new Error(`Source path ${sourcePath} does not exist`);
-  }
+    const sourceChoice = await select({
+      message: "Which path should be the primary source?",
+      choices: resolvedPaths.map((p, index) => ({
+        name: `${p.original} (${
+          p.pathType === PathType.FILE ? "File" : "Directory"
+        })`,
+        value: index,
+      })),
+    });
 
-  const sourceModuleName = sourceInfo.module.name;
-  const targetModuleName = targetInfo.module.name;
+    primaryPathType = resolvedPaths[sourceChoice].pathType;
 
-  if (sourceModuleName === targetModuleName) {
-    throw new Error("Source and target must be in different modules");
-  }
-
-  // Acquire lock for atomic operations
-  const releaseLock = await acquireLock(rootDir);
-
-  try {
-    const sourceRelPath = sourceInfo.relativePath;
-    const targetRelPath = targetInfo.relativePath;
-
-    // Check if this is a directory
-    const isDirectory = (await fs.stat(sourceFullPath)).isDirectory();
-
-    if (isDirectory) {
-      // Handle directory linking
-      await linkDirectory(
-        sourceFullPath,
-        targetFullPath,
-        sourceModuleName,
-        targetModuleName,
-        sourceRelPath,
-        targetRelPath,
-        linksDir,
-        config
-      );
-    } else {
-      // Handle file linking
-      await linkFile(
-        sourceFullPath,
-        targetFullPath,
-        sourceModuleName,
-        targetModuleName,
-        sourceRelPath,
-        targetRelPath,
-        linksDir,
-        config
-      );
+    if (sourceChoice !== 0) {
+      const selected = resolvedPaths[sourceChoice];
+      resolvedPaths.splice(sourceChoice, 1);
+      resolvedPaths.unshift(selected);
     }
 
-    // Save updated config
+    const incompatiblePaths = resolvedPaths
+      .slice(1)
+      .filter((p) => p.pathType !== primaryPathType);
+    if (incompatiblePaths.length > 0) {
+      console.log(
+        color(
+          "The following paths will be skipped due to incompatible types:",
+          "yellow"
+        )
+  );
+      incompatiblePaths.forEach((p) => {
+        console.log(color(`  - ${p.original}`, "yellow"));
+      });
+
+      const compatiblePaths = [
+        resolvedPaths[0],
+        ...resolvedPaths.slice(1).filter((p) => p.pathType === primaryPathType),
+      ];
+      resolvedPaths.length = 0;
+      resolvedPaths.push(...compatiblePaths);
+    }
+  } else {
+    const typeValue = fileTypes.values().next().value;
+    if (typeValue === undefined) {
+      primaryPathType = PathType.FILE;
+    } else {
+      primaryPathType = typeValue;
+    }
+  }
+
+  if (resolvedPaths.length < 2) {
+    console.error(color("Not enough compatible paths to create links.", "red"));
+    return;
+  }
+
+  const sourcePath = resolvedPaths[0];
+  const sourceInfo = sourcePath.moduleInfo!;
+  const sourceModuleName = sourceInfo.module.name;
+  const sourceRelPath = sourceInfo.relativePath;
+
+  const releaseLock = await acquireLock(rootDir);
+  let successCount = 0;
+  let failCount = 0;
+
+  try {
+    for (let i = 1; i < resolvedPaths.length; i++) {
+      const targetPath = resolvedPaths[i];
+      const targetInfo = targetPath.moduleInfo!;
+      const targetModuleName = targetInfo.module.name;
+      const targetRelPath = targetInfo.relativePath;
+
+      if (
+        sourceModuleName === targetModuleName &&
+        sourceRelPath === targetRelPath
+      ) {
+        console.error(
+          color(`Cannot link a path to itself: ${targetPath.original}`, "red")
+        );
+        failCount++;
+        continue;
+      }
+
+      try {
+        if (primaryPathType === PathType.FILE) {
+          await linkFile(
+            sourcePath.fullPath,
+            targetPath.fullPath,
+            sourceModuleName,
+            targetModuleName,
+            sourceRelPath,
+            targetRelPath,
+            linksDir,
+            config
+          );
+          console.log(
+            color(
+              `✓ Linked ${sourcePath.original} to ${targetPath.original}`,
+              "green"
+            )
+          );
+        } else {
+          await linkDirectory(
+            sourcePath.fullPath,
+            targetPath.fullPath,
+            sourceModuleName,
+            targetModuleName,
+            sourceRelPath,
+            targetRelPath,
+            linksDir,
+            config
+          );
+          console.log(
+            color(
+              `✓ Linked directory ${sourcePath.original} to ${targetPath.original}`,
+              "green"
+            )
+          );
+        }
+        successCount++;
+      } catch (error) {
+        console.error(
+          color(
+            `Error linking ${targetPath.original}: ${(error as Error).message}`,
+            "red"
+          )
+        );
+        failCount++;
+      }
+    }
+
     await saveMonoConfig(config);
 
     console.log(
-      color(`✓ Successfully linked ${sourcePath} to ${targetPath}`, "green")
+      color(
+        `\nCompleted with ${successCount} successful links and ${failCount} failures.`,
+        "blue"
+      )
+    );
+  } catch (error) {
+    console.error(
+      color(`Error linking files: ${(error as Error).message}`, "red")
     );
   } finally {
-    // Release lock
     await releaseLock();
   }
 }
 
 /**
  * Link a single file between modules
+ * This is a helper function that manages the actual linking of a single file
  */
 async function linkFile(
   sourceFullPath: string,
@@ -445,82 +535,52 @@ async function linkFile(
   linksDir: string,
   config: MonoConfig
 ): Promise<void> {
-  // Create a unique name for the master copy
   const masterCopyName = `${sourceModuleName}__${sourceRelPath.replace(
-    /\//g,
+    /[\/\s]/g,
     "_"
   )}`;
   const masterCopyPath = path.join(linksDir, masterCopyName);
 
-  // Check if this link already exists
-  const existingLink = config.links.find(
+  let existingLink = config.links.find(
     (link) =>
       link.source.module === sourceModuleName &&
       link.source.path === sourceRelPath
   );
 
   if (existingLink) {
-    // Check if the target is already linked
     const existingTarget = existingLink.targets.find(
       (t) => t.module === targetModuleName && t.path === targetRelPath
     );
 
     if (existingTarget) {
-      console.log(color(`This link already exists`, "yellow"));
+      console.log(color(`Link already exists for ${targetRelPath}`, "yellow"));
       return;
     }
-
-    // Add new target to existing link
-    existingLink.targets.push({
-      module: targetModuleName,
-      path: targetRelPath,
-    });
-
-    // Create target directory if needed
-    await mkdirAlways(path.dirname(targetFullPath));
-
-    // Create hard link to master copy
-    await createHardLink(masterCopyPath, targetFullPath);
-
-    console.log(
-      color(
-        `Added ${targetModuleName}/${targetRelPath} as a target for existing link`,
-        "green"
-      )
-    );
   } else {
-    // This is a new link
-
-    // Create master copy
-    await mkdirAlways(path.dirname(masterCopyPath));
-    await fs.copyFile(sourceFullPath, masterCopyPath);
-
-    // Create target directory if needed
-    await mkdirAlways(path.dirname(targetFullPath));
-
-    // Create hard links from source and target to master copy
-    await createHardLink(masterCopyPath, sourceFullPath);
-    await createHardLink(masterCopyPath, targetFullPath);
-
-    // Add link to config
-    config.links.push({
+    existingLink = {
       source: {
         module: sourceModuleName,
         path: sourceRelPath,
       },
-      targets: [
-        {
-          module: targetModuleName,
-          path: targetRelPath,
-        },
-      ],
+      targets: [],
       masterCopy: masterCopyName,
-    });
+    };
 
-    console.log(
-      color(`Created new link with master copy at ${masterCopyName}`, "green")
-    );
+    config.links.push(existingLink);
+
+    await mkdirAlways(path.dirname(masterCopyPath));
+    await fs.copyFile(sourceFullPath, masterCopyPath);
+
+    await createHardLink(masterCopyPath, sourceFullPath);
   }
+
+  existingLink.targets.push({
+    module: targetModuleName,
+    path: targetRelPath,
+  });
+
+  await mkdirAlways(path.dirname(targetFullPath));
+  await createHardLink(masterCopyPath, targetFullPath);
 }
 
 /**
@@ -536,10 +596,8 @@ async function linkDirectory(
   linksDir: string,
   config: MonoConfig
 ): Promise<void> {
-  // Create the target directory
   await mkdirAlways(targetFullPath);
 
-  // Read all files in the source directory
   const files = await listFilesRecursively(sourceFullPath);
 
   if (files.length === 0) {
@@ -548,18 +606,14 @@ async function linkDirectory(
   }
 
   for (const file of files) {
-    // Get the path relative to the source directory
     const relativePath = path.relative(sourceFullPath, file);
 
-    // Create full paths for this file
     const sourceFilePath = path.join(sourceFullPath, relativePath);
     const targetFilePath = path.join(targetFullPath, relativePath);
 
-    // Create module-relative paths
     const sourceFileRelPath = path.join(sourceRelPath, relativePath);
     const targetFileRelPath = path.join(targetRelPath, relativePath);
 
-    // Link this file
     await linkFile(
       sourceFilePath,
       targetFilePath,
@@ -606,7 +660,6 @@ async function createHardLink(
     await fs.link(sourcePath, targetPath);
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "EEXIST") {
-      // If target already exists, remove it and try again
       await fs.unlink(targetPath);
       await fs.link(sourcePath, targetPath);
     } else {
@@ -693,7 +746,6 @@ export async function listModules() {
 export async function withBranchValidation(
   action: () => Promise<void>
 ): Promise<void> {
-  // Check branch consistency before executing commands
   const isConsistent = await validateBranchConsistency();
 
   if (!isConsistent) {
@@ -703,8 +755,219 @@ export async function withBranchValidation(
         "yellow"
       )
     );
-    // Could add prompt here to confirm if user wants to continue
   }
 
   await action();
+}
+
+/**
+ * Check and audit the mono repo configuration and linked files
+ * This will validate the configuration and hardlinks and fix them if needed
+ */
+export async function checkMonoRepo(): Promise<void> {
+  try {
+    const { config, rootDir } = await loadMonoConfig();
+    const linksDir = path.join(rootDir, MONO_LINKS_DIR);
+    let errors = 0;
+    let fixed = 0;
+    let checked = 0;
+
+    console.log(color(`Checking mono repo configuration and links...`, "blue"));
+    console.log(color(`Root directory: ${rootDir}`, "blue"));
+
+    if (!(await exists(linksDir))) {
+      console.log(color(`Creating missing links directory...`, "yellow"));
+      await mkdirAlways(linksDir);
+      fixed++;
+    }
+
+    for (const module of config.modules) {
+      const moduleAbsPath =
+        module.absolutePath || path.resolve(rootDir, module.path);
+      checked++;
+
+      if (!(await exists(moduleAbsPath))) {
+        console.error(
+          color(`Module path does not exist: ${moduleAbsPath}`, "red")
+        );
+        errors++;
+      }
+    }
+
+    console.log(color(`\nChecking linked files...`, "blue"));
+    const fixedLinks: LinkedFile[] = [];
+
+    for (const link of config.links) {
+      checked++;
+      const masterCopyPath = path.join(linksDir, link.masterCopy);
+      let masterCopyExists = await exists(masterCopyPath);
+      let sourceModuleExists = false;
+      let sourcePathExists = false;
+
+      const sourceModule = config.modules.find(
+        (m) => m.name === link.source.module
+      );
+      if (!sourceModule) {
+        console.error(
+          color(`Source module ${link.source.module} not found`, "red")
+        );
+        errors++;
+        continue;
+      }
+
+      sourceModuleExists = true;
+      const sourceModulePath =
+        sourceModule.absolutePath || path.resolve(rootDir, sourceModule.path);
+      const sourceFilePath = path.join(sourceModulePath, link.source.path);
+      sourcePathExists = await exists(sourceFilePath);
+
+      if (!masterCopyExists) {
+        console.error(
+          color(`Master copy missing for ${link.masterCopy}`, "red")
+        );
+        errors++;
+
+        if (sourcePathExists) {
+          console.log(color(`Recreating master copy from source...`, "yellow"));
+          await mkdirAlways(path.dirname(masterCopyPath));
+          await fs.copyFile(sourceFilePath, masterCopyPath);
+          masterCopyExists = true;
+          fixed++;
+        }
+      }
+
+      if (sourcePathExists && masterCopyExists) {
+        try {
+          const sourceStat = await fs.stat(sourceFilePath);
+          const masterStat = await fs.stat(masterCopyPath);
+
+          if (sourceStat.ino !== masterStat.ino) {
+            console.log(
+              color(
+                `Fixing broken hardlink for source ${sourceFilePath}`,
+                "yellow"
+              )
+            );
+            await fs.unlink(sourceFilePath);
+            await createHardLink(masterCopyPath, sourceFilePath);
+            fixed++;
+          }
+        } catch (error) {
+          console.error(
+            color(
+              `Error checking source hardlink: ${(error as Error).message}`,
+              "red"
+            )
+          );
+          errors++;
+        }
+      } else if (!sourcePathExists && masterCopyExists) {
+        console.log(
+          color(`Recreating missing source file ${sourceFilePath}`, "yellow")
+        );
+        await mkdirAlways(path.dirname(sourceFilePath));
+        await createHardLink(masterCopyPath, sourceFilePath);
+        fixed++;
+      }
+
+      const validTargets = [];
+      for (const target of link.targets) {
+        const targetModule = config.modules.find(
+          (m) => m.name === target.module
+        );
+        if (!targetModule) {
+          console.error(
+            color(`Target module ${target.module} not found`, "red")
+          );
+          errors++;
+          continue;
+        }
+
+        const targetModulePath =
+          targetModule.absolutePath || path.resolve(rootDir, targetModule.path);
+        const targetFilePath = path.join(targetModulePath, target.path);
+        const targetPathExists = await exists(targetFilePath);
+
+        if (!targetPathExists && masterCopyExists) {
+          console.log(
+            color(`Recreating missing target file ${targetFilePath}`, "yellow")
+          );
+          await mkdirAlways(path.dirname(targetFilePath));
+          await createHardLink(masterCopyPath, targetFilePath);
+          fixed++;
+          validTargets.push(target);
+        } else if (targetPathExists && masterCopyExists) {
+          try {
+            const targetStat = await fs.stat(targetFilePath);
+            const masterStat = await fs.stat(masterCopyPath);
+
+            if (targetStat.ino !== masterStat.ino) {
+              console.log(
+                color(
+                  `Fixing broken hardlink for target ${targetFilePath}`,
+                  "yellow"
+                )
+              );
+              await fs.unlink(targetFilePath);
+              await createHardLink(masterCopyPath, targetFilePath);
+              fixed++;
+            }
+            validTargets.push(target);
+          } catch (error) {
+            console.error(
+              color(
+                `Error checking target hardlink: ${(error as Error).message}`,
+                "red"
+              )
+            );
+            errors++;
+          }
+        } else {
+          console.error(
+            color(
+              `Cannot fix target ${targetFilePath} - master copy missing`,
+              "red"
+            )
+          );
+          errors++;
+        }
+      }
+
+      if (sourcePathExists || validTargets.length > 0) {
+        fixedLinks.push({
+          source: link.source,
+          targets: validTargets,
+          masterCopy: link.masterCopy,
+        });
+      }
+    }
+
+    if (config.links.length !== fixedLinks.length) {
+      console.log(color(`Updating links configuration...`, "yellow"));
+      config.links = fixedLinks;
+      await saveMonoConfig(config);
+      fixed++;
+    }
+
+    console.log(color(`\nAudit complete:`, "blue"));
+    console.log(color(`- ${checked} items checked`, "white"));
+    console.log(color(`- ${errors} errors found`, "white"));
+    console.log(color(`- ${fixed} issues fixed`, "white"));
+
+    if (errors === 0) {
+      console.log(color(`✓ Mono repo configuration is valid`, "green"));
+    } else if (fixed > 0) {
+      console.log(
+        color(`✓ Fixed ${fixed} issues, ${errors - fixed} remain`, "yellow")
+      );
+    } else {
+      console.log(
+        color(`✗ Mono repo has issues that need manual intervention`, "red")
+      );
+    }
+  } catch (error) {
+    console.error(
+      color(`Error checking mono repo: ${(error as Error).message}`, "red")
+    );
+  }
 }

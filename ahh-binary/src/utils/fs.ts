@@ -3,7 +3,6 @@ import path from "path";
 import { resolvePath } from "./path";
 
 export const HOME_DIR = path.join(process.env.HOME || "/tmp", ".ahh");
-export const TLS_DIR = path.join(HOME_DIR, "webhook/tls");
 
 /**
  * Creates a directory and all parent directories if they don't exist

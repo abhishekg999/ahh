@@ -12,12 +12,14 @@ import {
 } from "./src/commands/mgit/main";
 import {
   addModule,
-  directLink,
+  checkMonoRepo,
   initMonoRepo,
+  linkFiles,
   listModules,
   removeModule,
   withBranchValidation,
 } from "./src/commands/mono/main";
+import { writeQRCode } from "./src/commands/qr/main";
 import { createSimpleServer } from "./src/commands/serve/main";
 import {
   configureWebhook,
@@ -39,7 +41,6 @@ import { getStdin } from "./src/utils/fs";
 import { isSemver, semverCompare } from "./src/utils/semver";
 import { color, generateQrcode, startSpinner } from "./src/utils/text";
 
-// Increment this version number when making changes to the CLI
 const VERSION = "1.0.5";
 
 const main = yargs(hideBin(Bun.argv))
@@ -167,7 +168,7 @@ const main = yargs(hideBin(Bun.argv))
   .hide("version")
   .command("qr", "Generate a QR code from stdin.", async () => {
     const input = await getStdin();
-    await generateQrcode(input);
+    await writeQRCode(input);
   })
   .hide("version")
   .command("update", "Update the CLI.", async () => {
@@ -266,7 +267,6 @@ const main = yargs(hideBin(Bun.argv))
             }),
         async (argv) => {
           try {
-            // Use withBranchValidation to check branch consistency
             await withBranchValidation(async () => {
               await addModule(argv.path, argv.name, argv.description);
             });
@@ -305,36 +305,57 @@ const main = yargs(hideBin(Bun.argv))
         }
       })
       .command(
-        "link",
-        "Link files or directories between modules.",
+        "link [files..]",
+        "Link files between modules in the mono repo",
         (yargs) =>
           yargs
-            .option("source", {
-              alias: "s",
+            .positional("files", {
               type: "string",
-              description: "Source file or directory path",
-              demandOption: true,
+              array: true,
+              description:
+                "Files to link (first file is source, rest are targets)",
             })
-            .option("target", {
-              alias: "t",
-              type: "string",
-              description: "Target file or directory path",
-              demandOption: true,
-            }),
+            .example(
+              "ahh mono link file1 file2",
+              "Link file1 to file2 (first file is source, rest are targets)"
+            )
+            .example(
+              "ahh mono link file1 file2 file3 file4",
+              "Link multiple files to the source file"
+            ),
         async (argv) => {
           try {
             await withBranchValidation(async () => {
-              const sourcePath = argv.source as string;
-              const targetPath = argv.target as string;
+              const filePaths = argv.files as string[];
 
-              if (!sourcePath || !targetPath) {
+              if (!filePaths || filePaths.length < 2) {
                 console.log(
-                  color("Both source and target paths are required", "yellow")
+                  color("You must provide at least two files to link", "yellow")
+                );
+                console.log(
+                  color(
+                    "Usage: ahh mono link <source> <target1> [<target2> ...]",
+                    "blue"
+                  )
                 );
                 return;
               }
 
-              await directLink(sourcePath, targetPath);
+              await linkFiles(filePaths);
+            });
+          } catch (error) {
+            console.error(color(`Error: ${(error as Error).message}`, "red"));
+          }
+        }
+      )
+      .command(
+        "check",
+        "Check and fix mono repo configuration and links",
+        {},
+        async () => {
+          try {
+            await withBranchValidation(async () => {
+              await checkMonoRepo();
             });
           } catch (error) {
             console.error(color(`Error: ${(error as Error).message}`, "red"));
@@ -363,7 +384,6 @@ const main = yargs(hideBin(Bun.argv))
         {},
         async () => {
           try {
-            // Simplified to just add all changes
             await addFiles();
           } catch (error) {
             console.error(color(`Error: ${(error as Error).message}`, "red"));
@@ -413,7 +433,6 @@ const main = yargs(hideBin(Bun.argv))
       )
       .command("push", "Push changes to remote repositories", {}, async () => {
         try {
-          // Simplified to only push to origin with current branch
           await pushChanges();
         } catch (error) {
           console.error(color(`Error: ${(error as Error).message}`, "red"));
