@@ -9,6 +9,25 @@ const fontMono = IBM_Plex_Mono({
   weight: ["400", "500", "600", "700"],
 });
 
+export const metadata = {
+  icons: [
+    { rel: "apple-touch-icon", sizes: "180x180", url: "/apple-touch-icon.png" },
+    {
+      rel: "icon",
+      type: "image/png",
+      sizes: "32x32",
+      url: "/favicon-32x32.png",
+    },
+    {
+      rel: "icon",
+      type: "image/png",
+      sizes: "16x16",
+      url: "/favicon-16x16.png",
+    },
+  ],
+  manifest: "/site.webmanifest",
+};
+
 function LoadingScreen() {
   return (
     <div className="relative min-h-screen overflow-hidden bg-black">
