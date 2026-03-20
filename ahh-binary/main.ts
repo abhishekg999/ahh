@@ -24,7 +24,7 @@ import { getStdin } from "./src/utils/fs";
 import { isSemver, semverCompare } from "./src/utils/semver";
 import { color, generateQrcode, startSpinner } from "./src/utils/text";
 
-const VERSION = "1.0.6";
+const VERSION = "1.0.7";
 
 const main = yargs(hideBin(Bun.argv))
   .scriptName("ahh")
