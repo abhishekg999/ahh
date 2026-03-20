@@ -1,11 +1,11 @@
 import { chmod, unlink } from "fs/promises";
 import path from "path";
-import { ExternalBinary } from "./external-binary";
 import { exists, mkdirAlways, resource } from "../utils/fs";
 import { OS } from "../utils/os";
 import { color, startSpinner } from "../utils/text";
+import { ExternalBinary } from "./external-binary";
 
-const VERSION = "2025.2.1";
+const VERSION = "2026.3.0";
 const BASE_URL = `https://github.com/cloudflare/cloudflared/releases/download/${VERSION}`;
 const BIN_DIR = resource("bin");
 const BIN_PATH = path.join(BIN_DIR, "cloudflared");
@@ -39,7 +39,9 @@ class Cloudflared extends ExternalBinary {
 
       const response = await fetch(url);
       if (!response.ok) {
-        throw new Error(`Failed to download cloudflared: HTTP ${response.status}`);
+        throw new Error(
+          `Failed to download cloudflared: HTTP ${response.status}`,
+        );
       }
 
       const data = await response.arrayBuffer();
