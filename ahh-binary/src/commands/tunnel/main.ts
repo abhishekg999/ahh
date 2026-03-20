@@ -1,3 +1,5 @@
+import { cloudflared } from "../../externals/cloudflared";
+
 const TUNNEL_REGEX = /https:\/\/[a-zA-Z0-9-]+\.trycloudflare\.com/;
 
 function matchTunnelUrl(url: string): string | null {
@@ -10,7 +12,7 @@ function matchTunnelUrl(url: string): string | null {
 
 export async function tunnel(port: number) {
   const url = `http://localhost:${port}`;
-  const proc = Bun.spawn(["cloudflared", "tunnel", "--url", url], {
+  const proc = await cloudflared.invoke(["tunnel", "--url", url], {
     stderr: "pipe",
   });
 
