@@ -1,6 +1,7 @@
 import { mkdtemp } from "fs/promises";
 import { tmpdir } from "os";
 import path from "path";
+import { shell } from "../../externals/shell";
 import { color } from "../../utils/text";
 
 export async function createTempDir(prefix: string): Promise<string> {
@@ -10,16 +11,14 @@ export async function createTempDir(prefix: string): Promise<string> {
 
 export async function enterTempDir(prefix: string): Promise<void> {
   const dir = await createTempDir(prefix);
-  const shell = process.env.SHELL || "bash";
-
   console.log(color(dir, "cyan"));
   console.log(color("Spawning shell. Exit to return.\n", "yellow"));
 
-  const proc = Bun.spawn([shell], {
+  const proc = await shell.invoke([], {
     cwd: dir,
+    stdin: "inherit",
     stdout: "inherit",
     stderr: "inherit",
-    stdin: "inherit",
     env: { ...process.env, AHH_TMP: dir },
   });
 

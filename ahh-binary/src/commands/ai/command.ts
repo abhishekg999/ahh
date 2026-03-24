@@ -1,38 +1,16 @@
 import type { AhhCommand } from "../../types/command";
-import { configureLLM, generateCommand } from "./main";
+import { aiConfigureCommand } from "./subcommands/configure/command";
+import { aiModelsCommand } from "./subcommands/models/command";
+import { aiXCommand } from "./subcommands/x/command";
 
-interface AiArgs {
-  prompt?: string[];
-  configure?: boolean;
-}
-
-export const aiCommand: AhhCommand<AiArgs> = {
-  command: "ai [prompt..]",
-  describe: "Generate a shell command from natural language.",
+export const aiCommand: AhhCommand = {
+  command: "ai",
+  describe: "AI-powered tools.",
   builder: (yargs) =>
     yargs
-      .positional("prompt", {
-        type: "string",
-        array: true,
-        description: "What you want to do",
-      })
-      .option("configure", {
-        alias: "c",
-        type: "boolean",
-        description: "Configure LLM provider, model, and API keys",
-      }),
-  handler: async (argv) => {
-    if (argv.configure) {
-      await configureLLM();
-      return;
-    }
-
-    if (!argv.prompt || argv.prompt.length === 0) {
-      console.error("Provide a prompt. Usage: ahh ai <what you want to do>");
-      process.exit(1);
-    }
-
-    const prompt = argv.prompt.join(" ");
-    await generateCommand(prompt);
-  },
+      .command(aiXCommand)
+      .command(aiModelsCommand)
+      .command(aiConfigureCommand)
+      .demandCommand(1, "Specify a subcommand: x, models, configure"),
+  handler: () => {},
 };

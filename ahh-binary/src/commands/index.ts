@@ -13,6 +13,7 @@ import { updateCommand } from "./update/command";
 import { uuidCommand } from "./uuid/command";
 import { webhookCommand } from "./webhook/command";
 import { workspaceCommand } from "./workspace/command";
+import { xCommand } from "./x/command";
 
 // Type safety is enforced at each command's definition site via AhhCommand<U>.
 // The cast to AnyCommand[] is needed because handler arg types are contravariant.
@@ -31,4 +32,5 @@ export const commands = [
   uuidCommand,
   webhookCommand,
   workspaceCommand,
+  xCommand,
 ] as AnyCommand[];
