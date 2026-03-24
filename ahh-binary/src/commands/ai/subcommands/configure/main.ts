@@ -76,7 +76,7 @@ async function pickModelFromLiteLLM(provider?: string): Promise<string | null> {
         ? filtered.filter((m) => m.model_id.toLowerCase().includes(q))
         : filtered;
 
-      return matches.slice(0, 40).map((m) => ({
+      return matches.slice(0, 200).map((m) => ({
         name: formatRow(m),
         value: m.model_id,
       }));

@@ -9,90 +9,109 @@ import {
   type LiteLLMModel,
 } from "../../lib/litellm";
 
+const NO_BORDER = {
+  top: "",
+  "top-mid": "",
+  "top-left": "",
+  "top-right": "",
+  bottom: "",
+  "bottom-mid": "",
+  "bottom-left": "",
+  "bottom-right": "",
+  left: "",
+  "left-mid": "",
+  mid: "",
+  "mid-mid": "",
+  right: "",
+  "right-mid": "",
+  middle: "  ",
+};
+
+const ROW_WIDTHS = [44, 18, 12, 12, 8, 12];
+
+function searchableText(m: LiteLLMModel): string {
+  return [m.model_id, m.litellm_provider, m.mode ?? "", featureTags(m)]
+    .join(" ")
+    .toLowerCase();
+}
+
 function formatRow(m: LiteLLMModel): string {
   const table = new Table({
-    chars: {
-      top: "",
-      "top-mid": "",
-      "top-left": "",
-      "top-right": "",
-      bottom: "",
-      "bottom-mid": "",
-      "bottom-left": "",
-      "bottom-right": "",
-      left: "",
-      "left-mid": "",
-      mid: "",
-      "mid-mid": "",
-      right: "",
-      "right-mid": "",
-      middle: " ",
-    },
-    style: { "padding-left": 0, "padding-right": 1 },
-    colWidths: [44, 18, 12, 12, 8],
+    chars: NO_BORDER,
+    style: { "padding-left": 0, "padding-right": 0 },
+    colWidths: ROW_WIDTHS,
   });
 
+  const id =
+    m.model_id.length > 43 ? m.model_id.slice(0, 42) + "~" : m.model_id;
+
   table.push([
-    m.model_id.length > 43 ? m.model_id.slice(0, 42) + "~" : m.model_id,
+    id,
     color(m.litellm_provider, "cyan"),
     formatCost(m.input_cost_per_token),
     formatCost(m.output_cost_per_token),
     formatTokens(m.max_input_tokens ?? m.max_tokens),
+    m.mode ?? "-",
   ]);
 
   return table.toString().trim();
 }
 
-function printModelDetail(m: LiteLLMModel): void {
+function printHeader(): void {
   const table = new Table({
-    style: { head: [], border: [] },
+    chars: NO_BORDER,
+    style: { "padding-left": 0, "padding-right": 0, head: [] },
+    colWidths: ROW_WIDTHS,
+    head: ["MODEL", "PROVIDER", "INPUT", "OUTPUT", "CONTEXT", "MODE"],
   });
 
-  table.push({ Model: m.model_id }, { Provider: m.litellm_provider });
-  if (m.mode) table.push({ Mode: m.mode });
-  table.push(
-    { "Input Cost": `${formatCost(m.input_cost_per_token)}/token` },
-    { "Output Cost": `${formatCost(m.output_cost_per_token)}/token` },
+  console.log(color(table.toString().trim(), "bold"));
+}
+
+function printModelDetail(m: LiteLLMModel): void {
+  const lines: [string, string][] = [
+    ["Model", m.model_id],
+    ["Provider", m.litellm_provider],
+  ];
+  if (m.mode) lines.push(["Mode", m.mode]);
+  lines.push(
+    ["Input", `${formatCost(m.input_cost_per_token)}/token`],
+    ["Output", `${formatCost(m.output_cost_per_token)}/token`],
   );
   if (m.max_input_tokens)
-    table.push({ "Max Input": formatTokens(m.max_input_tokens) });
+    lines.push(["Max Input", formatTokens(m.max_input_tokens)]);
   if (m.max_output_tokens)
-    table.push({ "Max Output": formatTokens(m.max_output_tokens) });
-  if (m.max_tokens) table.push({ "Max Tokens": formatTokens(m.max_tokens) });
+    lines.push(["Max Output", formatTokens(m.max_output_tokens)]);
+  if (m.max_tokens) lines.push(["Max Tokens", formatTokens(m.max_tokens)]);
   const features = featureTags(m);
-  if (features) table.push({ Features: features });
+  if (features) lines.push(["Features", features]);
 
-  console.log(`\n${table.toString()}`);
+  console.log();
+  for (const [label, value] of lines) {
+    console.log(`  ${color(label.padEnd(12), "yellow")} ${value}`);
+  }
 }
 
 export async function browseModels(): Promise<void> {
   const stopSpinner = startSpinner("Fetching models");
-  let allModels: LiteLLMModel[];
+  let models: LiteLLMModel[];
   try {
-    allModels = await fetchModels();
+    models = await fetchModels();
     stopSpinner();
   } catch (err) {
     stopSpinner();
     throw err;
   }
 
-  console.log(color(`${allModels.length} models loaded.\n`, "green"));
+  console.log(color(`${models.length} models loaded.\n`, "green"));
 
-  const mode = await select({
-    message: "Filter by mode",
-    choices: [
-      { name: "Chat models", value: "chat" },
-      { name: "Embedding models", value: "embedding" },
-      { name: "All models", value: "all" },
-    ],
-  });
+  // Pre-compute search index
+  const searchIndex = models.map((m) => ({
+    model: m,
+    text: searchableText(m),
+  }));
 
-  const models =
-    mode === "all"
-      ? allModels
-      : allModels.filter(
-          (m) => m.mode === mode || (!m.mode && mode === "chat"),
-        );
+  printHeader();
 
   while (true) {
     const modelId = await search({
@@ -100,21 +119,24 @@ export async function browseModels(): Promise<void> {
       source: (term) => {
         const q = (term ?? "").toLowerCase();
         const matches = q
-          ? models.filter(
-              (m) =>
-                m.model_id.toLowerCase().includes(q) ||
-                m.litellm_provider.toLowerCase().includes(q),
-            )
-          : models;
+          ? searchIndex.filter((e) => e.text.includes(q))
+          : searchIndex;
 
-        return matches.slice(0, 40).map((m) => ({
-          name: formatRow(m),
-          value: m.model_id,
-        }));
+        return [
+          {
+            name: color(`${matches.length} results`, "yellow"),
+            value: "",
+            disabled: true,
+          },
+          ...matches.slice(0, 200).map((e) => ({
+            name: formatRow(e.model),
+            value: e.model.model_id,
+          })),
+        ];
       },
     });
 
-    const model = allModels.find((m) => m.model_id === modelId);
+    const model = models.find((m) => m.model_id === modelId);
     if (model) printModelDetail(model);
 
     const next = await select({
@@ -127,5 +149,6 @@ export async function browseModels(): Promise<void> {
 
     if (next === "exit") break;
     console.log();
+    printHeader();
   }
 }
