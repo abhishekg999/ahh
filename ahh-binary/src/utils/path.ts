@@ -16,7 +16,7 @@ export function resolvePath(inputPath: string): string {
  * looking for the .ahh.virtual.monorepo.json file
  */
 export async function findMonoRepoRoot(
-  startPath?: string
+  startPath?: string,
 ): Promise<string | null> {
   const start = startPath ? resolvePath(startPath) : process.cwd();
   let current = start;

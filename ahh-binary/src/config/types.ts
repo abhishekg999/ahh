@@ -8,7 +8,7 @@ export const appConfigSchema = z.object({
     z.object({
       url: z.string(),
       name: z.string(),
-    })
+    }),
   ),
   DEFAULT_DISCORD_WEBHOOK: z.string().optional(),
 });

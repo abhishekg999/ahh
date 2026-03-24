@@ -4,7 +4,7 @@ export type SemverOperator = "<" | "<=" | ">" | ">=";
 export function semverCompare(
   version1: SemverString,
   version2: SemverString,
-  operator: SemverOperator
+  operator: SemverOperator,
 ): boolean {
   const [major1, minor1, patch1] = version1.split(".").map(Number);
   const [major2, minor2, patch2] = version2.split(".").map(Number);

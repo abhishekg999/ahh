@@ -1,3 +1,5 @@
+export const VERSION = "1.0.7";
+
 export const DEV = process.env.IS_LOCAL === "1";
 
 if (DEV) console.log("Running in development mode.");

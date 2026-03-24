@@ -6,7 +6,7 @@ export async function loadConfig(): Promise<AppConfig> {
   try {
     if (!(await exists(ConfigFile))) {
       await Bun.file(ConfigFile).write(
-        JSON.stringify(DefaultAppConfig, null, 2)
+        JSON.stringify(DefaultAppConfig, null, 2),
       );
       console.info(`Config not found. Creating at ${ConfigFile}`);
       return DefaultAppConfig;
