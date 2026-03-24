@@ -11,6 +11,11 @@ export const appConfigSchema = z.object({
     }),
   ),
   DEFAULT_DISCORD_WEBHOOK: z.string().optional(),
+
+  LLM_BASE_URL: z.string().optional(),
+  LLM_API_KEY: z.string().optional(),
+  LLM_MODEL: z.string().optional(),
+  LLM_AUTO_EXECUTE: z.boolean().optional(),
 });
 
 export const customAppConfig = appConfigSchema.partial();
