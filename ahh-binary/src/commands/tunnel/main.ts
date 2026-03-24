@@ -31,7 +31,7 @@ export async function tunnel(port: number) {
       text.includes("429 Too Many Requests")
     ) {
       console.error(
-        "Rate limited creating free tunnel. Configure a tunnel on your domain to avoid rate limits."
+        "Rate limited creating free tunnel. Configure a tunnel on your domain to avoid rate limits.",
       );
       break;
     }

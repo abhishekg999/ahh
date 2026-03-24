@@ -23,7 +23,7 @@ export async function sendToDiscord(content: string, webhookUrl: string) {
     console.log(color("Successfully sent to Discord!", "green"));
   } catch (error) {
     console.error(
-      color(`Failed to send to Discord: ${(error as Error).message}`, "red")
+      color(`Failed to send to Discord: ${(error as Error).message}`, "red"),
     );
     throw error;
   }
@@ -62,8 +62,8 @@ export async function configureWebhook(): Promise<void> {
                 `- ${w.name}${
                   w.name === config.DEFAULT_DISCORD_WEBHOOK ? " (default)" : ""
                 }\n  URL: ${w.url}`,
-                "white"
-              )
+                "white",
+              ),
             );
           });
         }
@@ -99,8 +99,8 @@ export async function configureWebhook(): Promise<void> {
             `✓ Added webhook "${name}"${
               makeDefault ? " and set as default" : ""
             }`,
-            "green"
-          )
+            "green",
+          ),
         );
         break;
       }
@@ -122,14 +122,14 @@ export async function configureWebhook(): Promise<void> {
         if (toRemove.length > 0) {
           await updateConfig({
             DISCORD_WEBHOOKS: config.DISCORD_WEBHOOKS.filter(
-              (w) => !toRemove.includes(w.name)
+              (w) => !toRemove.includes(w.name),
             ),
             ...(toRemove.includes(config.DEFAULT_DISCORD_WEBHOOK ?? "") && {
               DEFAULT_DISCORD_WEBHOOK: undefined,
             }),
           });
           console.log(
-            color(`✓ Removed ${toRemove.length} webhook(s)`, "green")
+            color(`✓ Removed ${toRemove.length} webhook(s)`, "green"),
           );
         }
         break;
@@ -152,8 +152,8 @@ export async function configureWebhook(): Promise<void> {
             defaultChoice
               ? `✓ Set "${defaultChoice}" as default`
               : "✓ Cleared default webhook",
-            "green"
-          )
+            "green",
+          ),
         );
         break;
       }
@@ -172,13 +172,13 @@ export async function selectWebhook(): Promise<string> {
 
   if (config.DISCORD_WEBHOOKS.length === 0) {
     throw new Error(
-      "No webhooks configured. Use 'ahh share-discord --configure' first."
+      "No webhooks configured. Use 'ahh share-discord --configure' first.",
     );
   }
 
   if (config.DEFAULT_DISCORD_WEBHOOK) {
     const defaultHook = config.DISCORD_WEBHOOKS.find(
-      (w) => w.name === config.DEFAULT_DISCORD_WEBHOOK
+      (w) => w.name === config.DEFAULT_DISCORD_WEBHOOK,
     );
     if (defaultHook) return defaultHook.url;
   }
