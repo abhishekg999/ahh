@@ -128,7 +128,7 @@ export async function browseModels(): Promise<void> {
             value: "",
             disabled: true,
           },
-          ...matches.slice(0, 200).map((e) => ({
+          ...matches.map((e) => ({
             name: formatRow(e.model),
             value: e.model.model_id,
           })),
