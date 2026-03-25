@@ -1,4 +1,4 @@
-export const VERSION = "1.0.8";
+export const VERSION = "1.0.9";
 
 export const DEV = process.env.IS_LOCAL === "1";
 

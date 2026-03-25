@@ -29,8 +29,23 @@ async function resolveLLM(): Promise<ResolvedLLM> {
   process.exit(1);
 }
 
-const SYSTEM_PROMPT =
-  "You are a shell command generator. Given a natural language description, respond with ONLY the shell command. No explanation, no markdown, no backticks. Just the raw command.";
+const SYSTEM_PROMPT = `You are a shell command generator. Respond with ONLY the command. No explanation, no markdown, no backticks, no commentary. Just the raw command.
+
+Rules:
+- Output exactly one shell command (use && or | to chain if needed)
+- Use standard POSIX utilities when possible
+- Prefer simple, readable commands over clever one-liners
+- Never output destructive commands (rm -rf /, mkfs, dd of=/dev) without explicit user intent
+- If the request is ambiguous, pick the most common interpretation`;
+
+function buildContext(): string {
+  const parts: string[] = [];
+  parts.push(`OS: ${process.platform} ${process.arch}`);
+  parts.push(`Shell: ${process.env.SHELL ?? "unknown"}`);
+  parts.push(`CWD: ${process.cwd()}`);
+  if (process.env.HOME) parts.push(`HOME: ${process.env.HOME}`);
+  return parts.join("\n");
+}
 
 async function executeCommand(command: string): Promise<void> {
   console.log();
@@ -55,10 +70,11 @@ export async function generateCommand(prompt: string): Promise<void> {
 
   let command: string;
   try {
+    const systemContent = `${SYSTEM_PROMPT}\n\nEnvironment:\n${buildContext()}`;
     const completion = await client.chat.completions.create({
       model,
       messages: [
-        { role: "system", content: SYSTEM_PROMPT },
+        { role: "system", content: systemContent },
         { role: "user", content: prompt },
       ],
       temperature: 0,
