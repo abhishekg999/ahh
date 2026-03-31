@@ -1,10 +1,12 @@
 import type { AnyCommand } from "../types/command";
 import { aiCommand } from "./ai/command";
 import { clipCommand } from "./clip/command";
+import { k8sCommand } from "./k8s/command";
 import { portCommand } from "./port/command";
 import { qrCommand } from "./qr/command";
 import { randCommand } from "./rand/command";
 import { serveCommand } from "./serve/command";
+import { settingsCommand } from "./settings/command";
 import { shareDiscordCommand } from "./share-discord/command";
 import { sizeCommand } from "./size/command";
 import { tmpCommand } from "./tmp/command";
@@ -20,10 +22,12 @@ import { xCommand } from "./x/command";
 export const commands = [
   aiCommand,
   clipCommand,
+  k8sCommand,
   portCommand,
   qrCommand,
   randCommand,
   serveCommand,
+  settingsCommand,
   shareDiscordCommand,
   sizeCommand,
   tmpCommand,

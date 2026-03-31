@@ -16,12 +16,12 @@ export const webhookCommand: AhhCommand = {
     const { url: tunnelUrl } = await tunnel(port);
     stopSpin();
 
-    console.info("Webhook URL", color(tunnelUrl, "cyan"));
-
     if (!tunnelUrl) {
       console.error("Failed to create tunnel.");
       return;
     }
+
+    console.info("Webhook URL", color(tunnelUrl, "cyan"));
     await openAuthenticatedWebhookDashboard(token, tunnelUrl);
   },
 };
