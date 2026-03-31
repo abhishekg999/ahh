@@ -16,6 +16,14 @@ export const appConfigSchema = z.object({
   LLM_API_KEY: z.string().optional(),
   LLM_MODEL: z.string().optional(),
   LLM_AUTO_EXECUTE: z.boolean().optional(),
+
+  TUNNEL: z
+    .object({
+      name: z.string(),
+      id: z.string(),
+      hostname: z.string(),
+    })
+    .optional(),
 });
 
 export const customAppConfig = appConfigSchema.partial();

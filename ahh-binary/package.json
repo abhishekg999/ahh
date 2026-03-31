@@ -22,7 +22,7 @@
     "prod": "bun main.ts",
     "format": "prettier --write .",
     "compile:dev": "bun build --compile --minify --sourcemap --env-file=.bun.env.local main.ts --outfile ./dist/bin/ahh-dev",
-    "compile:prod": "bun build --compile --minify main.ts --outfile ./dist/bin/ahh",
+    "compile:prod": "bun build --compile --minify --no-compile-autoload-dotenv --no-compile-autoload-bunfig main.ts --outfile ./dist/bin/ahh",
     "completions:dev": "mkdir -p ./dist && AHH_COMPLETIONS=1 bun main.ts >> ./dist/_ahh"
   },
   "devDependencies": {
