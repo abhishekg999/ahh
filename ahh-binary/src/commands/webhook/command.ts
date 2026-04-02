@@ -5,15 +5,25 @@ import { color, startSpinner } from "../../utils/text";
 import { tunnel } from "../tunnel/main";
 import { createWebhookServer } from "./main";
 
-export const webhookCommand: AhhCommand = {
+interface WebhookArgs {
+  name?: string;
+}
+
+export const webhookCommand: AhhCommand<WebhookArgs> = {
   command: "webhook",
   describe: "Starts a webhook server.",
-  handler: async () => {
+  builder: (yargs) =>
+    yargs.option("name", {
+      alias: "n",
+      type: "string",
+      description: "Custom subdomain name",
+    }),
+  handler: async (argv) => {
     const { port, token } = await createWebhookServer(
       (await getConfig()).DEFAULT_WEBHOOK_HTTP_PORT,
     );
     const stopSpin = startSpinner("Starting tunnel, this may take a second...");
-    const { url: tunnelUrl } = await tunnel(port);
+    const { url: tunnelUrl } = await tunnel(port, argv.name);
     stopSpin();
 
     if (!tunnelUrl) {
@@ -22,6 +32,6 @@ export const webhookCommand: AhhCommand = {
     }
 
     console.info("Webhook URL", color(tunnelUrl, "cyan"));
-    await openAuthenticatedWebhookDashboard(token, tunnelUrl);
+    await openAuthenticatedWebhookDashboard(token, tunnelUrl, port);
   },
 };

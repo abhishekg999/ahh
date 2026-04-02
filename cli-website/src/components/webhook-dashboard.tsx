@@ -43,8 +43,8 @@ export function WebhookDashboard() {
     null
   );
   const [searchTerm, setSearchTerm] = useState("");
-  const { token, webhookUrl } = useWebhookParams();
-  const { requests, clearRequests, isConnected } = useWebhookSocket(token, webhookUrl);
+  const { token, webhookUrl, wsUrl } = useWebhookParams();
+  const { requests, clearRequests, isConnected } = useWebhookSocket(token, wsUrl);
 
   const filteredRequests = requests.filter(
     (request) =>

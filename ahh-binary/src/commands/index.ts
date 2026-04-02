@@ -6,6 +6,7 @@ import { portCommand } from "./port/command";
 import { qrCommand } from "./qr/command";
 import { randCommand } from "./rand/command";
 import { serveCommand } from "./serve/command";
+import { shellCommand } from "./shell/command";
 import { settingsCommand } from "./settings/command";
 import { shareDiscordCommand } from "./share-discord/command";
 import { sizeCommand } from "./size/command";
@@ -27,6 +28,7 @@ export const commands = [
   qrCommand,
   randCommand,
   serveCommand,
+  shellCommand,
   settingsCommand,
   shareDiscordCommand,
   sizeCommand,

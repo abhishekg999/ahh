@@ -12,8 +12,12 @@ export async function openURLInBrowser(
 export async function openAuthenticatedWebhookDashboard(
   token: string,
   webhookUrl: string,
+  localPort: number,
 ) {
-  await openURLInBrowser(
-    `${AHH_WEBHOOK_URL}?token=${token}&url=${encodeURIComponent(webhookUrl)}`,
-  );
+  const params = new URLSearchParams({
+    token,
+    url: webhookUrl,
+    ws: `ws://localhost:${localPort}/ws`,
+  });
+  await openURLInBrowser(`${AHH_WEBHOOK_URL}?${params}`);
 }
