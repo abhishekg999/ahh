@@ -2,11 +2,8 @@ import { eq } from "drizzle-orm";
 import { getConfig } from "../../config/main";
 import type { AppConfig } from "../../config/types";
 import { cloudflared } from "../../externals/cloudflared";
-import {
-  getDb,
-  pruneStaleMappings,
-  getActiveMappingCount,
-} from "../../db/main";
+import { getDb } from "../../db/main";
+import { pruneStaleMappings, getActiveMappingCount } from "./mappings";
 import { tunnelMappings } from "../../db/schema";
 import { generateSubdomain } from "./words";
 import { ensureDaemon, stopDaemon } from "./daemon";

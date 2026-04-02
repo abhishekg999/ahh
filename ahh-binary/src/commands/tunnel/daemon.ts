@@ -7,11 +7,11 @@ import {
 } from "./cloudflared-config";
 import { cloudflared } from "../../externals/cloudflared";
 import { startRouter } from "./router";
-import { pruneStaleMappings } from "../../db/main";
+import { isProcessAlive, pruneStaleMappings } from "./mappings";
 
 type TunnelConfig = NonNullable<AppConfig["TUNNEL"]>;
 
-const PID_FILE = resource("tunnel-daemon.pid");
+const PID_FILE = resource("tunnel/daemon.pid");
 const DEFAULT_ROUTER_PORT = 4800;
 
 async function readPidFile(): Promise<number | null> {
@@ -21,15 +21,6 @@ async function readPidFile(): Promise<number | null> {
     return isNaN(pid) ? null : pid;
   } catch {
     return null;
-  }
-}
-
-function isProcessAlive(pid: number): boolean {
-  try {
-    process.kill(pid, 0);
-    return true;
-  } catch {
-    return false;
   }
 }
 

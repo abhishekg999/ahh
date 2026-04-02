@@ -1,7 +1,8 @@
 import path from "path";
-import { resource } from "../../utils/fs";
+import { HOME_DIR, resource } from "../../utils/fs";
 
-const CONFIG_PATH = resource("cloudflared-config.yml");
+const CONFIG_PATH = resource("tunnel/cloudflared.yml");
+const USER_HOME = path.dirname(HOME_DIR);
 
 export function getCloudflaredConfigPath(): string {
   return CONFIG_PATH;
@@ -12,7 +13,7 @@ export function generateCloudflaredConfig(
   routerPort: number,
 ): string {
   const credentialsFile = path.join(
-    process.env.HOME!,
+    USER_HOME,
     ".cloudflared",
     `${tunnelId}.json`,
   );

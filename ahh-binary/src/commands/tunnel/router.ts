@@ -3,17 +3,9 @@ import { appendFileSync } from "fs";
 import { getDb } from "../../db/main";
 import { tunnelMappings } from "../../db/schema";
 import { resource } from "../../utils/fs";
+import { isProcessAlive } from "./mappings";
 
-const LOG_FILE = resource("tunnel.log");
-
-function isProcessAlive(pid: number): boolean {
-  try {
-    process.kill(pid, 0);
-    return true;
-  } catch {
-    return false;
-  }
-}
+const LOG_FILE = resource("tunnel/tunnel.log");
 
 function extractSubdomain(host: string, baseHostname: string): string | null {
   const hostname = host.split(":")[0];

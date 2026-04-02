@@ -24,7 +24,9 @@
     "format": "prettier --write .",
     "compile:dev": "bun build --compile --minify --sourcemap --env-file=.bun.env.local main.ts --outfile ./dist/bin/ahh-dev",
     "compile:prod": "bun build --compile --minify --no-compile-autoload-dotenv --no-compile-autoload-bunfig main.ts --outfile ./dist/bin/ahh",
-    "completions:dev": "mkdir -p ./dist && AHH_COMPLETIONS=1 bun main.ts >> ./dist/_ahh"
+    "completions:dev": "mkdir -p ./dist && AHH_COMPLETIONS=1 bun main.ts >> ./dist/_ahh",
+    "db:generate": "bunx drizzle-kit generate",
+    "db:studio": "bunx drizzle-kit studio"
   },
   "devDependencies": {
     "@types/bun": "^1.3.11",
@@ -32,6 +34,7 @@
     "@types/pem": "^1.14.4",
     "@types/qrcode-terminal": "^0.12.2",
     "@types/yargs": "^17.0.35",
+    "drizzle-kit": "^0.31.10",
     "prettier": "^3.8.1"
   },
   "peerDependencies": {
