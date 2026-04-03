@@ -22,6 +22,7 @@ export const appConfigSchema = z.object({
       name: z.string(),
       id: z.string(),
       hostname: z.string(),
+      routerPort: z.number().optional(),
     })
     .optional(),
 });

@@ -1,6 +1,19 @@
-export const VERSION = "1.0.10";
+export const VERSION = "1.0.11";
 
 export const DEV = process.env.IS_LOCAL === "1";
+export const IS_COMPILED = Bun.main.startsWith("/$bunfs/");
+
+/** Absolute path to the user's home directory. */
+export const USER_HOME = process.env.HOME || "/tmp";
+
+/**
+ * The base argv prefix to re-invoke this binary as a subprocess.
+ * Compiled: ["/abs/path/to/ahh"]
+ * Dev:     ["/abs/path/to/bun", "/abs/path/to/main.ts"]
+ */
+export const BASE_COMMAND: string[] = IS_COMPILED
+  ? [process.execPath]
+  : [process.execPath, Bun.main];
 
 if (DEV) console.log("Running in development mode.");
 

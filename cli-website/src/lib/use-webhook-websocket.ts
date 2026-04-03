@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 export interface WebhookData {
   id: string;
@@ -12,26 +12,14 @@ export interface WebhookData {
   body: string;
 }
 
-export function useWebhookSocket(token: string, webhookUrl: string) {
+export function useWebhookSocket(token: string, wsUrl: string) {
   const [requests, setRequests] = useState<WebhookData[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const wsUrl = useMemo(() => {
-    if (!webhookUrl) return null;
-    try {
-      const url = new URL("/ws", webhookUrl);
-      url.protocol = "wss";
-      return url;
-    } catch (err) {
-      console.error("Invalid webhook URL:", err);
-      return null;
-    }
-  }, [webhookUrl]);
-
   const connect = useCallback(() => {
     if (!wsUrl) {
-      setError("Invalid webhook URL");
+      setError("No WebSocket URL provided");
       return () => {};
     }
 
@@ -46,7 +34,7 @@ export function useWebhookSocket(token: string, webhookUrl: string) {
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       if (data === "OK") {
-        // Handle OK message
+        // Auth acknowledged
       } else {
         setRequests((prev) => [data, ...prev]);
       }

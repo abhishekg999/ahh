@@ -1,14 +1,11 @@
 import path from "path";
 import { confirm } from "@inquirer/prompts";
+import { USER_HOME } from "../../../../constants/main";
 import { exists } from "../../../../utils/fs";
 import { color } from "../../../../utils/text";
 import { cloudflared } from "../../../../externals/cloudflared";
 
-const CERT_PATH = path.join(
-  process.env.HOME || "/tmp",
-  ".cloudflared",
-  "cert.pem",
-);
+const CERT_PATH = path.join(USER_HOME, ".cloudflared", "cert.pem");
 
 export async function isCloudflareLoggedIn(): Promise<boolean> {
   return exists(CERT_PATH);

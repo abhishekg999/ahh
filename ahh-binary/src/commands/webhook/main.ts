@@ -24,7 +24,7 @@ export async function createWebhookServer(port: number) {
   const wsClients = new Set<ElysiaWS>();
 
   const server = new Elysia()
-    .use(cors({ origin: /cli\.ahh\.bet$/ }))
+    .use(cors({ origin: true }))
     .get("/ws", () => {
       return "OK";
     })

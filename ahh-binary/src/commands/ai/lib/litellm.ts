@@ -3,7 +3,7 @@ import { exists, resource } from "../../../utils/fs";
 const LITELLM_URL =
   "https://raw.githubusercontent.com/BerriAI/litellm/refs/heads/main/model_prices_and_context_window.json";
 
-const CACHE_FILE = resource("litellm-models.json");
+const CACHE_FILE = resource("ai/models.json");
 const CACHE_TTL_MS = 4 * 60 * 60 * 1000; // 4 hours
 
 export interface LiteLLMModel {

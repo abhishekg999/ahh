@@ -61,7 +61,10 @@ async function listTunnels(): Promise<CloudflareTunnel[]> {
 
   try {
     const tunnels: CloudflareTunnel[] = JSON.parse(stdout);
-    return tunnels.filter((t) => !t.deleted_at);
+    const GO_ZERO_TIME = "0001-01-01T00:00:00Z";
+    return tunnels.filter(
+      (t) => !t.deleted_at || t.deleted_at === GO_ZERO_TIME,
+    );
   } catch {
     return [];
   }
@@ -124,6 +127,17 @@ async function setupTunnel(
   const routed = await routeDns(tunnel.name, hostname);
   if (!routed) return;
 
+  // Route wildcard DNS for multi-subdomain support
+  const wildcardRouted = await routeDns(tunnel.name, `*.${hostname}`);
+  if (!wildcardRouted) {
+    console.log(
+      color(
+        "Warning: wildcard DNS route failed. Multi-tunnel support may not work.",
+        "yellow",
+      ),
+    );
+  }
+
   await updateConfig({
     TUNNEL: { name: tunnel.name, id: tunnel.id, hostname },
   });
@@ -158,7 +172,10 @@ export async function tunnelConfigure(): Promise<void> {
         { name: "Create new tunnel", value: "CREATE" },
         { name: "Use existing tunnel", value: "EXISTING" },
         ...(config.TUNNEL
-          ? [{ name: "Remove tunnel config", value: "REMOVE" }]
+          ? [
+              { name: "Route DNS (re-apply CNAME records)", value: "ROUTE" },
+              { name: "Remove tunnel config", value: "REMOVE" },
+            ]
           : []),
         { name: "Back", value: "EXIT" },
       ],
@@ -174,6 +191,15 @@ export async function tunnelConfigure(): Promise<void> {
       case "EXISTING": {
         const tunnel = await selectExistingTunnel();
         if (tunnel) await setupTunnel(tunnel, config);
+        break;
+      }
+
+      case "ROUTE": {
+        const t = config.TUNNEL;
+        if (t) {
+          await routeDns(t.name, t.hostname);
+          await routeDns(t.name, `*.${t.hostname}`);
+        }
         break;
       }
 

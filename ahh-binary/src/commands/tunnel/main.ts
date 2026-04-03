@@ -1,6 +1,12 @@
+import { eq } from "drizzle-orm";
 import { getConfig } from "../../config/main";
 import type { AppConfig } from "../../config/types";
 import { cloudflared } from "../../externals/cloudflared";
+import { getDb } from "../../db/main";
+import { pruneStaleMappings, getActiveMappingCount } from "./mappings";
+import { tunnelMappings } from "../../db/schema";
+import { generateSubdomain } from "./words";
+import { ensureDaemon, stopDaemon } from "./daemon";
 
 const QUICK_TUNNEL_REGEX = /https:\/\/[a-zA-Z0-9-]+\.trycloudflare\.com/;
 
@@ -50,45 +56,94 @@ async function quickTunnel(port: number) {
 async function namedTunnel(
   port: number,
   tunnelConfig: NonNullable<AppConfig["TUNNEL"]>,
+  name?: string,
 ) {
-  const url = `http://localhost:${port}`;
-  const proc = await cloudflared.invoke(
-    ["tunnel", "run", "--url", url, tunnelConfig.name],
-    { stderr: "pipe" },
-  );
+  const db = getDb();
 
-  const reader = proc.stderr.getReader();
-  const decoder = new TextDecoder();
+  // Clean up dead entries
+  pruneStaleMappings();
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-
-    const text = decoder.decode(value);
-
-    if (text.includes("Registered tunnel connection")) {
-      return {
-        url: `https://${tunnelConfig.hostname}`,
-        kill: proc.kill,
-      };
-    }
-
-    if (text.includes("credentials file not found")) {
+  // Resolve subdomain
+  let subdomain: string;
+  if (name) {
+    // Check for collision
+    const existing = db
+      .select()
+      .from(tunnelMappings)
+      .where(eq(tunnelMappings.subdomain, name))
+      .get();
+    if (existing) {
       console.error(
-        "Tunnel credentials not found. Run `ahh tunnel configure` to set up.",
+        `Subdomain "${name}" is already in use (port ${existing.port}, pid ${existing.pid}).`,
       );
-      break;
+      process.exit(1);
+    }
+    subdomain = name;
+  } else {
+    // Generate random, re-roll on collision
+    subdomain = generateSubdomain();
+    while (
+      db
+        .select()
+        .from(tunnelMappings)
+        .where(eq(tunnelMappings.subdomain, subdomain))
+        .get()
+    ) {
+      subdomain = generateSubdomain();
     }
   }
 
-  return {};
+  // Register mapping
+  db.insert(tunnelMappings).values({ subdomain, port, pid: process.pid }).run();
+
+  // Ensure the shared daemon is running
+  await ensureDaemon(tunnelConfig);
+
+  const url = `http://${subdomain}.${tunnelConfig.hostname}`;
+
+  // Cleanup handler
+  const cleanup = () => {
+    try {
+      db.delete(tunnelMappings)
+        .where(eq(tunnelMappings.subdomain, subdomain))
+        .run();
+    } catch {}
+
+    // If we were the last mapping, stop the daemon
+    try {
+      if (getActiveMappingCount() === 0) {
+        stopDaemon();
+      }
+    } catch {}
+  };
+
+  process.on("SIGINT", () => {
+    cleanup();
+    process.exit(130);
+  });
+  process.on("SIGTERM", () => {
+    cleanup();
+    process.exit(143);
+  });
+  process.on("exit", cleanup);
+
+  return { url, subdomain, kill: cleanup };
 }
 
-export async function tunnel(port: number) {
+interface TunnelResult {
+  url?: string;
+  subdomain?: string;
+  kill?: () => void;
+}
+
+export async function tunnel(
+  port: number,
+  name?: string,
+): Promise<TunnelResult> {
   const config = await getConfig();
 
   if (config.TUNNEL) {
-    return namedTunnel(port, config.TUNNEL);
+    return namedTunnel(port, config.TUNNEL, name);
   }
 
   return quickTunnel(port);
