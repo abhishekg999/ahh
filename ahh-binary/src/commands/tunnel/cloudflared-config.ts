@@ -1,8 +1,8 @@
 import path from "path";
-import { HOME_DIR, resource } from "../../utils/fs";
+import { USER_HOME } from "../../constants/main";
+import { resource } from "../../utils/fs";
 
 const CONFIG_PATH = resource("tunnel/cloudflared.yml");
-const USER_HOME = path.dirname(HOME_DIR);
 
 export function getCloudflaredConfigPath(): string {
   return CONFIG_PATH;

@@ -1,4 +1,5 @@
 import { unlink } from "fs/promises";
+import { BASE_COMMAND } from "../../constants/main";
 import { resource } from "../../utils/fs";
 import type { AppConfig } from "../../config/types";
 import {
@@ -30,18 +31,6 @@ export async function isDaemonRunning(): Promise<boolean> {
   return isProcessAlive(pid);
 }
 
-function buildDaemonCommand(routerPort: number): string[] {
-  const runtime = process.argv[0];
-  const entry = Bun.main;
-
-  // Compiled binary: runtime and entry are the same
-  // Dev mode (bun main.ts): need to include the script path
-  if (runtime === entry || entry.endsWith(runtime)) {
-    return [runtime, "tunnel", "__daemon", String(routerPort)];
-  }
-  return [runtime, entry, "tunnel", "__daemon", String(routerPort)];
-}
-
 export async function ensureDaemon(tunnelConfig: TunnelConfig): Promise<void> {
   if (await isDaemonRunning()) return;
 
@@ -50,10 +39,11 @@ export async function ensureDaemon(tunnelConfig: TunnelConfig): Promise<void> {
   // Write cloudflared config before spawning daemon
   await writeCloudflaredConfig(tunnelConfig.id, routerPort);
 
-  const cmd = buildDaemonCommand(routerPort);
+  const cmd = [...BASE_COMMAND, "tunnel", "__daemon", String(routerPort)];
+  const logFile = Bun.file(resource("tunnel/daemon.log"));
   const proc = Bun.spawn(cmd, {
-    stdout: "ignore",
-    stderr: "ignore",
+    stdout: logFile,
+    stderr: logFile,
     stdin: "ignore",
   });
 
