@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Copy, Terminal, ChevronRight, Github } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -108,10 +109,12 @@ export default function Page() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
             >
-              <Button variant="outline" className="group">
-                Get Started
-                <ChevronRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Button>
+              <Link href="/docs">
+                <Button variant="outline" className="group">
+                  Get Started
+                  <ChevronRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </Link>
               <Button
                 variant="outline"
                 onClick={() => window.open(githubURL, "_blank")}

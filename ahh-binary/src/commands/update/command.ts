@@ -13,6 +13,14 @@ import { color } from "../../utils/text";
 export const updateCommand: AhhCommand = {
   command: "update",
   describe: "Update the CLI.",
+  meta: {
+    description:
+      "Checks for a newer version of the ahh CLI on GitHub releases and installs it if available. Shows the current and latest versions.",
+    examples: [
+      { command: "ahh update", description: "Check for updates and install if available" },
+    ],
+    category: "utility",
+  },
   handler: async () => {
     const doError = (): void => {
       console.error("Unexpected response from server.");

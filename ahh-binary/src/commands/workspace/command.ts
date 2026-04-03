@@ -11,6 +11,15 @@ interface WorkspaceArgs {
 export const workspaceCommand: AhhCommand<WorkspaceArgs> = {
   command: "workspace <name>",
   describe: "Initialize a workspace.",
+  meta: {
+    description:
+      "Scaffolds a new project workspace from a template. Supports multiple workspace types with pre-configured project structure and dependencies.",
+    examples: [
+      { command: "ahh workspace bun", description: "Initialize a Bun workspace in the current directory" },
+      { command: "ahh workspace node -p ./myapp", description: "Initialize a Node workspace at a specific path" },
+    ],
+    category: "utility",
+  },
   builder: (yargs) =>
     yargs
       .positional("name", {

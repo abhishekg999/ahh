@@ -9,6 +9,15 @@ interface WatchArgs {
 export const shellWatchCommand: AhhCommand<WatchArgs> = {
   command: "watch <interval> <command..>",
   describe: "Re-run a command every N seconds.",
+  meta: {
+    description:
+      "Repeatedly runs a command at a fixed interval, showing the output each time. Similar to the Unix `watch` utility.",
+    examples: [
+      { command: "ahh $ watch 5 kubectl get pods", description: "Check pod status every 5 seconds" },
+      { command: "ahh $ watch 2 date", description: "Print the date every 2 seconds" },
+    ],
+    category: "shell",
+  },
   builder: (yargs) =>
     yargs
       .positional("interval", {

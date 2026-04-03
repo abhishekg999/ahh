@@ -15,6 +15,12 @@ interface TunnelArgs {
 const tunnelDaemonCommand: AhhCommand<{ port: number }> = {
   command: "__daemon <port>",
   describe: false as any,
+  meta: {
+    description: "Internal daemon process for managing tunnel routing.",
+    examples: [],
+    category: "networking",
+    hidden: true,
+  } as any,
   builder: (yargs) =>
     yargs.positional("port", {
       type: "number",
@@ -33,6 +39,18 @@ const tunnelDaemonCommand: AhhCommand<{ port: number }> = {
 export const tunnelCommand: AhhCommand<TunnelArgs> = {
   command: "tunnel",
   describe: "Tunnel a local port.",
+  meta: {
+    description:
+      "Exposes a local port to the internet via a Cloudflare tunnel. Supports quick anonymous tunnels or named tunnels with custom subdomains on your own domain. Displays the public URL and a QR code, then tails incoming request logs.",
+    examples: [
+      { command: "ahh tunnel -p 3000", description: "Tunnel port 3000 with a random subdomain" },
+      { command: "ahh tunnel -p 8080 -n api", description: "Tunnel port 8080 as api.<your-domain>" },
+      { command: "ahh tunnel login", description: "Authenticate with Cloudflare" },
+      { command: "ahh tunnel configure", description: "Set up a named tunnel" },
+    ],
+    category: "networking",
+  },
+  subcommands: [tunnelLoginCommand, tunnelConfigureCommand],
   builder: (yargs) =>
     yargs
       .command(tunnelLoginCommand)

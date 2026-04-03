@@ -12,6 +12,15 @@ interface WebhookArgs {
 export const webhookCommand: AhhCommand<WebhookArgs> = {
   command: "webhook",
   describe: "Starts a webhook server.",
+  meta: {
+    description:
+      "Spins up a local HTTP server that captures incoming webhook requests, tunnels it to a public URL, and opens a live dashboard to inspect headers, query params, and bodies in real time.",
+    examples: [
+      { command: "ahh webhook", description: "Start a webhook server with a random subdomain" },
+      { command: "ahh webhook -n myapp", description: "Start with a custom subdomain name" },
+    ],
+    category: "networking",
+  },
   builder: (yargs) =>
     yargs.option("name", {
       alias: "n",

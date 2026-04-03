@@ -1,0 +1,928 @@
+{
+  "version": "1.0.11",
+  "generatedAt": "2026-04-03T21:15:57.388Z",
+  "commands": [
+    {
+      "name": "ai",
+      "command": "ai",
+      "describe": "AI-powered tools.",
+      "description": "AI-powered developer tools. Generate shell commands from natural language, browse available models, or configure your LLM provider.",
+      "aliases": [],
+      "category": "ai",
+      "examples": [
+        {
+          "command": "ahh ai x list all running processes",
+          "description": "Generate a shell command with AI"
+        },
+        {
+          "command": "ahh ai models",
+          "description": "Browse available LLM models"
+        },
+        {
+          "command": "ahh ai configure",
+          "description": "Set up LLM provider"
+        }
+      ],
+      "positionals": [],
+      "options": [],
+      "subcommands": [
+        {
+          "name": "x",
+          "command": "x <prompt..>",
+          "describe": "Generate and run a shell command from natural language.",
+          "description": "Translates a natural-language prompt into a shell command using an LLM, shows you the generated command, and optionally executes it.",
+          "aliases": [],
+          "category": "ai",
+          "examples": [
+            {
+              "command": "ahh ai x list all docker containers",
+              "description": "Generate a docker ps command"
+            },
+            {
+              "command": "ahh ai x find files modified today",
+              "description": "Generate a find command"
+            }
+          ],
+          "positionals": [
+            {
+              "name": "prompt",
+              "type": "string",
+              "required": true,
+              "array": true,
+              "description": "What you want to do"
+            }
+          ],
+          "options": [],
+          "subcommands": []
+        },
+        {
+          "name": "models",
+          "command": "models",
+          "describe": "Browse available LLM models from litellm.",
+          "description": "Lists all available LLM models from litellm's model registry with an interactive browser.",
+          "aliases": [],
+          "category": "ai",
+          "examples": [
+            {
+              "command": "ahh ai models",
+              "description": "Browse available models"
+            }
+          ],
+          "positionals": [],
+          "options": [],
+          "subcommands": []
+        },
+        {
+          "name": "configure",
+          "command": "configure",
+          "describe": "Configure LLM provider, model, and API keys.",
+          "description": "Interactive setup for choosing your LLM provider, model, and API key. Stored in ~/.ahh/ahh.config.json.",
+          "aliases": [],
+          "category": "ai",
+          "examples": [
+            {
+              "command": "ahh ai configure",
+              "description": "Set up LLM provider and API key"
+            }
+          ],
+          "positionals": [],
+          "options": [],
+          "subcommands": []
+        }
+      ]
+    },
+    {
+      "name": "x",
+      "command": "x <prompt..>",
+      "describe": "AI shell command (shortcut for 'ai x').",
+      "description": "Shortcut for `ahh ai x`. Generates a shell command from a natural-language prompt using an LLM, previews it, and optionally runs it.",
+      "aliases": [],
+      "category": "ai",
+      "examples": [
+        {
+          "command": "ahh x find all large files over 100mb",
+          "description": "Generate a command to find large files"
+        },
+        {
+          "command": "ahh x compress this directory as tar.gz",
+          "description": "Generate a tar compression command"
+        }
+      ],
+      "positionals": [
+        {
+          "name": "prompt",
+          "type": "string",
+          "required": true,
+          "array": true,
+          "description": "What you want to do"
+        }
+      ],
+      "options": [],
+      "subcommands": []
+    },
+    {
+      "name": "settings",
+      "command": "settings",
+      "describe": "Configure ahh settings.",
+      "description": "Opens an interactive prompt to view and modify ahh settings stored in ~/.ahh/ahh.config.json.",
+      "aliases": [],
+      "category": "config",
+      "examples": [
+        {
+          "command": "ahh settings",
+          "description": "Open the settings configurator"
+        }
+      ],
+      "positionals": [],
+      "options": [],
+      "subcommands": []
+    },
+    {
+      "name": "qr",
+      "command": "qr",
+      "describe": "Generate a QR code from stdin.",
+      "description": "Reads text from stdin and renders a QR code directly in the terminal. Useful for quickly sharing URLs or short strings with a phone.",
+      "aliases": [],
+      "category": "generation",
+      "examples": [
+        {
+          "command": "echo 'https://example.com' | ahh qr",
+          "description": "Generate a QR code for a URL"
+        },
+        {
+          "command": "cat secret.txt | ahh qr",
+          "description": "Generate a QR code from file contents"
+        }
+      ],
+      "positionals": [],
+      "options": [],
+      "subcommands": []
+    },
+    {
+      "name": "rand",
+      "command": "rand [length]",
+      "describe": "Generate a random string.",
+      "description": "Generates a cryptographically random string in the specified encoding. Defaults to 32 characters of alphanumeric output. Supports hex, base64url, and alphabetic-only modes.",
+      "aliases": [],
+      "category": "generation",
+      "examples": [
+        {
+          "command": "ahh rand",
+          "description": "Generate a 32-char alphanumeric string"
+        },
+        {
+          "command": "ahh rand 64 --hex",
+          "description": "Generate a 64-char hex string"
+        },
+        {
+          "command": "ahh rand 16 --base64",
+          "description": "Generate a 16-char base64url string"
+        },
+        {
+          "command": "ahh rand 8 --alpha",
+          "description": "Generate an 8-char letters-only string"
+        }
+      ],
+      "positionals": [
+        {
+          "name": "length",
+          "type": "number",
+          "required": false,
+          "array": false,
+          "description": "Length of the output string",
+          "default": 32
+        }
+      ],
+      "options": [
+        {
+          "name": "hex",
+          "type": "boolean",
+          "description": "Hex output",
+          "default": false,
+          "required": false
+        },
+        {
+          "name": "base64",
+          "type": "boolean",
+          "description": "Base64url output",
+          "default": false,
+          "required": false
+        },
+        {
+          "name": "alpha",
+          "type": "boolean",
+          "description": "Letters only (no digits)",
+          "default": false,
+          "required": false
+        }
+      ],
+      "subcommands": []
+    },
+    {
+      "name": "uuid",
+      "command": "uuid",
+      "describe": "Generate UUIDs.",
+      "description": "Generate one or more UUIDs. Defaults to v4 (random). Use --v7 for time-sortable UUIDs that are monotonically increasing.",
+      "aliases": [],
+      "category": "generation",
+      "examples": [
+        {
+          "command": "ahh uuid",
+          "description": "Generate a single UUIDv4"
+        },
+        {
+          "command": "ahh uuid --v7",
+          "description": "Generate a time-sortable UUIDv7"
+        },
+        {
+          "command": "ahh uuid -n 5",
+          "description": "Generate 5 UUIDs"
+        }
+      ],
+      "positionals": [],
+      "options": [
+        {
+          "name": "v7",
+          "type": "boolean",
+          "description": "Generate UUIDv7 (time-sortable)",
+          "default": false,
+          "required": false
+        },
+        {
+          "name": "count",
+          "alias": "n",
+          "type": "number",
+          "description": "Number of UUIDs to generate",
+          "default": 1,
+          "required": false
+        }
+      ],
+      "subcommands": []
+    },
+    {
+      "name": "k8s",
+      "command": "k8s",
+      "describe": "Kubernetes (kind) cluster management.",
+      "description": "Manage local Kubernetes clusters using kind (Kubernetes in Docker). Create, delete, list, and inspect clusters without needing to remember kind CLI flags.",
+      "aliases": [],
+      "category": "kubernetes",
+      "examples": [
+        {
+          "command": "ahh k8s create",
+          "description": "Create a local cluster"
+        },
+        {
+          "command": "ahh k8s list",
+          "description": "List all clusters"
+        },
+        {
+          "command": "ahh k8s delete",
+          "description": "Delete a cluster"
+        }
+      ],
+      "positionals": [],
+      "options": [],
+      "subcommands": [
+        {
+          "name": "create",
+          "command": "create [name]",
+          "describe": "Create a kind cluster.",
+          "description": "Creates a new local Kubernetes cluster using kind. Defaults to the cluster name 'ahh'.",
+          "aliases": [],
+          "category": "kubernetes",
+          "examples": [
+            {
+              "command": "ahh k8s create",
+              "description": "Create a cluster named 'ahh'"
+            },
+            {
+              "command": "ahh k8s create myapp",
+              "description": "Create a cluster named 'myapp'"
+            }
+          ],
+          "positionals": [
+            {
+              "name": "name",
+              "type": "string",
+              "required": false,
+              "array": false,
+              "description": "Cluster name",
+              "default": "ahh"
+            }
+          ],
+          "options": [],
+          "subcommands": []
+        },
+        {
+          "name": "delete",
+          "command": "delete [name]",
+          "describe": "Delete a kind cluster.",
+          "description": "Deletes a local kind Kubernetes cluster. Defaults to the cluster name 'ahh'.",
+          "aliases": [],
+          "category": "kubernetes",
+          "examples": [
+            {
+              "command": "ahh k8s delete",
+              "description": "Delete the default 'ahh' cluster"
+            },
+            {
+              "command": "ahh k8s delete myapp",
+              "description": "Delete a cluster named 'myapp'"
+            }
+          ],
+          "positionals": [
+            {
+              "name": "name",
+              "type": "string",
+              "required": false,
+              "array": false,
+              "description": "Cluster name",
+              "default": "ahh"
+            }
+          ],
+          "options": [],
+          "subcommands": []
+        },
+        {
+          "name": "list",
+          "command": "list",
+          "describe": "List kind clusters.",
+          "description": "Lists all local kind Kubernetes clusters.",
+          "aliases": [],
+          "category": "kubernetes",
+          "examples": [
+            {
+              "command": "ahh k8s list",
+              "description": "List all kind clusters"
+            }
+          ],
+          "positionals": [],
+          "options": [],
+          "subcommands": []
+        },
+        {
+          "name": "status",
+          "command": "status [name]",
+          "describe": "Show kind cluster status.",
+          "description": "Shows the status of a local kind Kubernetes cluster including node readiness. Defaults to the cluster name 'ahh'.",
+          "aliases": [],
+          "category": "kubernetes",
+          "examples": [
+            {
+              "command": "ahh k8s status",
+              "description": "Show status of the default cluster"
+            },
+            {
+              "command": "ahh k8s status myapp",
+              "description": "Show status of 'myapp' cluster"
+            }
+          ],
+          "positionals": [
+            {
+              "name": "name",
+              "type": "string",
+              "required": false,
+              "array": false,
+              "description": "Cluster name",
+              "default": "ahh"
+            }
+          ],
+          "options": [],
+          "subcommands": []
+        }
+      ]
+    },
+    {
+      "name": "port",
+      "command": "port <target>",
+      "describe": "Inspect and manage processes on ports.",
+      "description": "Inspect which process is bound to a given port, or list all listening ports. Optionally kill the process with a configurable signal.",
+      "aliases": [],
+      "category": "networking",
+      "examples": [
+        {
+          "command": "ahh port 3000",
+          "description": "Show which process is on port 3000"
+        },
+        {
+          "command": "ahh port 3000 -k",
+          "description": "Kill the process on port 3000"
+        },
+        {
+          "command": "ahh port 8080 -k -s SIGKILL",
+          "description": "Force-kill the process on port 8080"
+        },
+        {
+          "command": "ahh port list",
+          "description": "List all listening ports"
+        }
+      ],
+      "positionals": [
+        {
+          "name": "target",
+          "type": "string",
+          "required": true,
+          "array": false,
+          "description": "Port number or 'list'"
+        }
+      ],
+      "options": [
+        {
+          "name": "kill",
+          "alias": "k",
+          "type": "boolean",
+          "description": "Kill the process on this port",
+          "required": false
+        },
+        {
+          "name": "signal",
+          "alias": "s",
+          "type": "string",
+          "description": "Signal to send with --kill",
+          "default": "SIGTERM",
+          "required": false
+        }
+      ],
+      "subcommands": []
+    },
+    {
+      "name": "serve",
+      "command": "serve",
+      "describe": "Serve the current directory over HTTP.",
+      "description": "Starts a static file server for the current directory and automatically creates a Cloudflare tunnel to make it publicly accessible. Displays the public URL and a QR code.",
+      "aliases": [],
+      "category": "networking",
+      "examples": [
+        {
+          "command": "ahh serve",
+          "description": "Serve current directory on default port with a tunnel"
+        },
+        {
+          "command": "ahh serve -p 3000",
+          "description": "Serve on port 3000"
+        },
+        {
+          "command": "ahh serve -n mysite",
+          "description": "Serve with a custom subdomain"
+        }
+      ],
+      "positionals": [],
+      "options": [
+        {
+          "name": "port",
+          "alias": "p",
+          "type": "number",
+          "description": "Port to run the server on",
+          "default": 8000,
+          "required": false
+        },
+        {
+          "name": "name",
+          "alias": "n",
+          "type": "string",
+          "description": "Custom subdomain name",
+          "required": false
+        }
+      ],
+      "subcommands": []
+    },
+    {
+      "name": "tunnel",
+      "command": "tunnel",
+      "describe": "Tunnel a local port.",
+      "description": "Exposes a local port to the internet via a Cloudflare tunnel. Supports quick anonymous tunnels or named tunnels with custom subdomains on your own domain. Displays the public URL and a QR code, then tails incoming request logs.",
+      "aliases": [],
+      "category": "networking",
+      "examples": [
+        {
+          "command": "ahh tunnel -p 3000",
+          "description": "Tunnel port 3000 with a random subdomain"
+        },
+        {
+          "command": "ahh tunnel -p 8080 -n api",
+          "description": "Tunnel port 8080 as api.<your-domain>"
+        },
+        {
+          "command": "ahh tunnel login",
+          "description": "Authenticate with Cloudflare"
+        },
+        {
+          "command": "ahh tunnel configure",
+          "description": "Set up a named tunnel"
+        }
+      ],
+      "positionals": [],
+      "options": [
+        {
+          "name": "port",
+          "alias": "p",
+          "type": "number",
+          "description": "Port to tunnel",
+          "required": false
+        },
+        {
+          "name": "name",
+          "alias": "n",
+          "type": "string",
+          "description": "Custom subdomain name",
+          "required": false
+        }
+      ],
+      "subcommands": [
+        {
+          "name": "login",
+          "command": "login",
+          "describe": "Authenticate cloudflared with your Cloudflare account.",
+          "description": "Opens a browser to authenticate cloudflared with your Cloudflare account. Required before using named tunnels with custom domains.",
+          "aliases": [],
+          "category": "networking",
+          "examples": [
+            {
+              "command": "ahh tunnel login",
+              "description": "Authenticate with Cloudflare"
+            }
+          ],
+          "positionals": [],
+          "options": [],
+          "subcommands": []
+        },
+        {
+          "name": "configure",
+          "command": "configure",
+          "describe": "Set up a named Cloudflare tunnel with a custom domain.",
+          "description": "Interactive setup for creating a named Cloudflare tunnel with wildcard DNS on your own domain. Configures the tunnel ID and domain in ~/.ahh/ahh.config.json.",
+          "aliases": [],
+          "category": "networking",
+          "examples": [
+            {
+              "command": "ahh tunnel configure",
+              "description": "Set up a named tunnel with custom domain"
+            }
+          ],
+          "positionals": [],
+          "options": [],
+          "subcommands": []
+        }
+      ]
+    },
+    {
+      "name": "webhook",
+      "command": "webhook",
+      "describe": "Starts a webhook server.",
+      "description": "Spins up a local HTTP server that captures incoming webhook requests, tunnels it to a public URL, and opens a live dashboard to inspect headers, query params, and bodies in real time.",
+      "aliases": [],
+      "category": "networking",
+      "examples": [
+        {
+          "command": "ahh webhook",
+          "description": "Start a webhook server with a random subdomain"
+        },
+        {
+          "command": "ahh webhook -n myapp",
+          "description": "Start with a custom subdomain name"
+        }
+      ],
+      "positionals": [],
+      "options": [
+        {
+          "name": "name",
+          "alias": "n",
+          "type": "string",
+          "description": "Custom subdomain name",
+          "required": false
+        }
+      ],
+      "subcommands": []
+    },
+    {
+      "name": "shell",
+      "command": "shell",
+      "describe": "Shell utilities.",
+      "description": "A collection of shell utilities for running commands with strategies like parallel repetition, automatic retries, racing, and interval-based watching.",
+      "aliases": [
+        "$"
+      ],
+      "category": "shell",
+      "examples": [
+        {
+          "command": "ahh $ repeat 3 echo hello",
+          "description": "Run a command 3 times in parallel"
+        },
+        {
+          "command": "ahh $ retry 5 make build",
+          "description": "Retry a flaky command"
+        }
+      ],
+      "positionals": [],
+      "options": [],
+      "subcommands": [
+        {
+          "name": "repeat",
+          "command": "repeat <count> <command..>",
+          "describe": "Run a command N times in parallel.",
+          "description": "Spawns the given command N times in parallel and streams all output. Useful for load testing or running concurrent jobs.",
+          "aliases": [],
+          "category": "shell",
+          "examples": [
+            {
+              "command": "ahh $ repeat 5 curl -s localhost:3000",
+              "description": "Hit an endpoint 5 times in parallel"
+            },
+            {
+              "command": "ahh $ repeat 3 echo hello",
+              "description": "Run echo 3 times concurrently"
+            }
+          ],
+          "positionals": [
+            {
+              "name": "count",
+              "type": "number",
+              "required": true,
+              "array": false,
+              "description": "Number of times to run"
+            },
+            {
+              "name": "command",
+              "type": "string",
+              "required": true,
+              "array": true,
+              "description": "Command to run"
+            }
+          ],
+          "options": [],
+          "subcommands": []
+        },
+        {
+          "name": "retry",
+          "command": "retry <count> <command..>",
+          "describe": "Retry a command up to N times until it succeeds.",
+          "description": "Runs the given command and retries it up to N times if it exits with a non-zero code. Stops as soon as the command succeeds.",
+          "aliases": [],
+          "category": "shell",
+          "examples": [
+            {
+              "command": "ahh $ retry 3 curl -sf localhost:3000/health",
+              "description": "Retry a health check up to 3 times"
+            },
+            {
+              "command": "ahh $ retry 5 make build",
+              "description": "Retry a flaky build up to 5 times"
+            }
+          ],
+          "positionals": [
+            {
+              "name": "count",
+              "type": "number",
+              "required": true,
+              "array": false,
+              "description": "Max number of attempts"
+            },
+            {
+              "name": "command",
+              "type": "string",
+              "required": true,
+              "array": true,
+              "description": "Command to run"
+            }
+          ],
+          "options": [],
+          "subcommands": []
+        },
+        {
+          "name": "race",
+          "command": "race",
+          "describe": "Run commands in parallel, keep the first to succeed. Separate with ---",
+          "description": "Runs multiple commands in parallel and keeps only the first one to exit successfully. Remaining processes are killed. Commands are separated by `---`.",
+          "aliases": [],
+          "category": "shell",
+          "examples": [
+            {
+              "command": "ahh $ race curl -s mirror1.example.com --- curl -s mirror2.example.com",
+              "description": "Race two mirrors and keep the fastest response"
+            }
+          ],
+          "positionals": [],
+          "options": [],
+          "subcommands": []
+        },
+        {
+          "name": "watch",
+          "command": "watch <interval> <command..>",
+          "describe": "Re-run a command every N seconds.",
+          "description": "Repeatedly runs a command at a fixed interval, showing the output each time. Similar to the Unix `watch` utility.",
+          "aliases": [],
+          "category": "shell",
+          "examples": [
+            {
+              "command": "ahh $ watch 5 kubectl get pods",
+              "description": "Check pod status every 5 seconds"
+            },
+            {
+              "command": "ahh $ watch 2 date",
+              "description": "Print the date every 2 seconds"
+            }
+          ],
+          "positionals": [
+            {
+              "name": "interval",
+              "type": "number",
+              "required": true,
+              "array": false,
+              "description": "Seconds between runs"
+            },
+            {
+              "name": "command",
+              "type": "string",
+              "required": true,
+              "array": true,
+              "description": "Command to run"
+            }
+          ],
+          "options": [],
+          "subcommands": []
+        }
+      ]
+    },
+    {
+      "name": "clip",
+      "command": "clip",
+      "describe": "Copy any stdin to the clipboard.",
+      "description": "Reads from stdin and copies the content to the system clipboard. Works on macOS (pbcopy) and Linux (xclip/xsel).",
+      "aliases": [],
+      "category": "utility",
+      "examples": [
+        {
+          "command": "echo 'hello' | ahh clip",
+          "description": "Copy text to clipboard"
+        },
+        {
+          "command": "cat file.txt | ahh clip",
+          "description": "Copy file contents to clipboard"
+        }
+      ],
+      "positionals": [],
+      "options": [],
+      "subcommands": []
+    },
+    {
+      "name": "share-discord",
+      "command": "share-discord",
+      "describe": "Share content through Discord webhook.",
+      "description": "Sends stdin content to a Discord channel via a saved webhook URL. Use --configure to add or manage webhook URLs.",
+      "aliases": [],
+      "category": "utility",
+      "examples": [
+        {
+          "command": "echo 'deploy done' | ahh share-discord",
+          "description": "Send a message to Discord"
+        },
+        {
+          "command": "ahh share-discord --configure",
+          "description": "Add or manage webhook URLs"
+        }
+      ],
+      "positionals": [],
+      "options": [
+        {
+          "name": "configure",
+          "alias": "c",
+          "type": "boolean",
+          "description": "Configure webhooks",
+          "required": false
+        }
+      ],
+      "subcommands": []
+    },
+    {
+      "name": "size",
+      "command": "size [path]",
+      "describe": "Show file and directory sizes with color.",
+      "description": "Displays file and directory sizes with color-coded output. Defaults to the current directory. Shows a total at the end unless disabled.",
+      "aliases": [],
+      "category": "utility",
+      "examples": [
+        {
+          "command": "ahh size",
+          "description": "Show sizes in the current directory"
+        },
+        {
+          "command": "ahh size ./src",
+          "description": "Show sizes in a specific directory"
+        },
+        {
+          "command": "ahh size --no-total",
+          "description": "Hide the total line"
+        }
+      ],
+      "positionals": [
+        {
+          "name": "path",
+          "type": "string",
+          "required": false,
+          "array": false,
+          "description": "File or directory to measure",
+          "default": "."
+        }
+      ],
+      "options": [
+        {
+          "name": "total",
+          "alias": "t",
+          "type": "boolean",
+          "description": "Show total at the end",
+          "default": true,
+          "required": false
+        }
+      ],
+      "subcommands": []
+    },
+    {
+      "name": "tmp",
+      "command": "tmp",
+      "describe": "Create a temp directory and drop into it.",
+      "description": "Creates a temporary directory and spawns a new shell inside it. When the shell exits, the directory remains for later cleanup. Useful for quick throwaway experiments.",
+      "aliases": [],
+      "category": "utility",
+      "examples": [
+        {
+          "command": "ahh tmp",
+          "description": "Create a temp dir with default 'ahh' prefix"
+        },
+        {
+          "command": "ahh tmp -p myproject",
+          "description": "Create a temp dir with custom prefix"
+        }
+      ],
+      "positionals": [],
+      "options": [
+        {
+          "name": "prefix",
+          "alias": "p",
+          "type": "string",
+          "description": "Prefix for the temp directory name",
+          "default": "ahh",
+          "required": false
+        }
+      ],
+      "subcommands": []
+    },
+    {
+      "name": "update",
+      "command": "update",
+      "describe": "Update the CLI.",
+      "description": "Checks for a newer version of the ahh CLI on GitHub releases and installs it if available. Shows the current and latest versions.",
+      "aliases": [],
+      "category": "utility",
+      "examples": [
+        {
+          "command": "ahh update",
+          "description": "Check for updates and install if available"
+        }
+      ],
+      "positionals": [],
+      "options": [],
+      "subcommands": []
+    },
+    {
+      "name": "workspace",
+      "command": "workspace <name>",
+      "describe": "Initialize a workspace.",
+      "description": "Scaffolds a new project workspace from a template. Supports multiple workspace types with pre-configured project structure and dependencies.",
+      "aliases": [],
+      "category": "utility",
+      "examples": [
+        {
+          "command": "ahh workspace bun",
+          "description": "Initialize a Bun workspace in the current directory"
+        },
+        {
+          "command": "ahh workspace node -p ./myapp",
+          "description": "Initialize a Node workspace at a specific path"
+        }
+      ],
+      "positionals": [
+        {
+          "name": "name",
+          "type": "string",
+          "required": true,
+          "array": false,
+          "description": "Name of the workspace",
+          "choices": [
+            "python-pwntools-interact",
+            "web-xss-template"
+          ]
+        }
+      ],
+      "options": [
+        {
+          "name": "path",
+          "alias": "p",
+          "type": "string",
+          "description": "Path to load the workspace",
+          "required": false
+        }
+      ],
+      "subcommands": []
+    }
+  ]
+}

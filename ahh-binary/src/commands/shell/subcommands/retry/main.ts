@@ -1,5 +1,5 @@
 import { color } from "../../../../utils/text";
-import { spawnShell, collectOutput } from "../../spawn";
+import { spawnShell, streamOutput } from "../../spawn";
 
 export async function retryCommand(count: number, command: string[]) {
   const cmd = command.join(" ");
@@ -18,13 +18,10 @@ export async function retryCommand(count: number, command: string[]) {
 
   for (let attempt = 0; attempt < count; attempt++) {
     currentProc = spawnShell(cmd);
-    const { stdout, stderr, exitCode } = await collectOutput(currentProc);
-
-    const out = stdout.trimEnd();
-    const err = stderr.trimEnd();
-
-    if (out) console.info(out);
-    if (err) console.error(err);
+    const exitCode = await streamOutput(currentProc, (line, stream) => {
+      const out = stream === "stderr" ? process.stderr : process.stdout;
+      out.write(`${line}\n`);
+    });
 
     if (exitCode === 0) return;
 

@@ -25,6 +25,7 @@
     "compile:dev": "bun build --compile --minify --sourcemap --env-file=.bun.env.local main.ts --outfile ./dist/bin/ahh-dev",
     "compile:prod": "bun build --compile --minify --no-compile-autoload-dotenv --no-compile-autoload-bunfig main.ts --outfile ./dist/bin/ahh",
     "completions:dev": "mkdir -p ./dist && AHH_COMPLETIONS=1 bun main.ts >> ./dist/_ahh",
+    "generate:docs": "bun run scripts/generate-docs.ts",
     "db:generate": "bunx drizzle-kit generate",
     "db:studio": "bunx drizzle-kit studio"
   },

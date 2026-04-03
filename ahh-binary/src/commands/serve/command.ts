@@ -11,6 +11,16 @@ interface ServeArgs {
 export const serveCommand: AhhCommand<ServeArgs> = {
   command: "serve",
   describe: "Serve the current directory over HTTP.",
+  meta: {
+    description:
+      "Starts a static file server for the current directory and automatically creates a Cloudflare tunnel to make it publicly accessible. Displays the public URL and a QR code.",
+    examples: [
+      { command: "ahh serve", description: "Serve current directory on default port with a tunnel" },
+      { command: "ahh serve -p 3000", description: "Serve on port 3000" },
+      { command: "ahh serve -n mysite", description: "Serve with a custom subdomain" },
+    ],
+    category: "networking",
+  },
   builder: (yargs) =>
     yargs
       .option("port", {

@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --experimental-https --turbopack",
     "build": "next build",
+    "generate:docs": "bun run ../ahh-binary/scripts/generate-docs.ts -o src/data/commands.json",
     "start": "next start",
     "lint": "next lint"
   },

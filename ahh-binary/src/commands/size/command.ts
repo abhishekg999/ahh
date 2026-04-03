@@ -10,6 +10,16 @@ interface SizeArgs {
 export const sizeCommand: AhhCommand<SizeArgs> = {
   command: "size [path]",
   describe: "Show file and directory sizes with color.",
+  meta: {
+    description:
+      "Displays file and directory sizes with color-coded output. Defaults to the current directory. Shows a total at the end unless disabled.",
+    examples: [
+      { command: "ahh size", description: "Show sizes in the current directory" },
+      { command: "ahh size ./src", description: "Show sizes in a specific directory" },
+      { command: "ahh size --no-total", description: "Hide the total line" },
+    ],
+    category: "utility",
+  },
   builder: (yargs) =>
     yargs
       .positional("path", {

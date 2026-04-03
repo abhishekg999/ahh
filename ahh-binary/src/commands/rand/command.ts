@@ -11,6 +11,17 @@ interface RandArgs {
 export const randCommand: AhhCommand<RandArgs> = {
   command: "rand [length]",
   describe: "Generate a random string.",
+  meta: {
+    description:
+      "Generates a cryptographically random string in the specified encoding. Defaults to 32 characters of alphanumeric output. Supports hex, base64url, and alphabetic-only modes.",
+    examples: [
+      { command: "ahh rand", description: "Generate a 32-char alphanumeric string" },
+      { command: "ahh rand 64 --hex", description: "Generate a 64-char hex string" },
+      { command: "ahh rand 16 --base64", description: "Generate a 16-char base64url string" },
+      { command: "ahh rand 8 --alpha", description: "Generate an 8-char letters-only string" },
+    ],
+    category: "generation",
+  },
   builder: (yargs) =>
     yargs
       .positional("length", {

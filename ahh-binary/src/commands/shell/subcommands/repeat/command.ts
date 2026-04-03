@@ -9,6 +9,15 @@ interface RepeatArgs {
 export const shellRepeatCommand: AhhCommand<RepeatArgs> = {
   command: "repeat <count> <command..>",
   describe: "Run a command N times in parallel.",
+  meta: {
+    description:
+      "Spawns the given command N times in parallel and streams all output. Useful for load testing or running concurrent jobs.",
+    examples: [
+      { command: "ahh $ repeat 5 curl -s localhost:3000", description: "Hit an endpoint 5 times in parallel" },
+      { command: "ahh $ repeat 3 echo hello", description: "Run echo 3 times concurrently" },
+    ],
+    category: "shell",
+  },
   builder: (yargs) =>
     yargs
       .positional("count", {

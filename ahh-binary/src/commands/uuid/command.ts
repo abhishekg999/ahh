@@ -9,6 +9,16 @@ interface UuidArgs {
 export const uuidCommand: AhhCommand<UuidArgs> = {
   command: "uuid",
   describe: "Generate UUIDs.",
+  meta: {
+    description:
+      "Generate one or more UUIDs. Defaults to v4 (random). Use --v7 for time-sortable UUIDs that are monotonically increasing.",
+    examples: [
+      { command: "ahh uuid", description: "Generate a single UUIDv4" },
+      { command: "ahh uuid --v7", description: "Generate a time-sortable UUIDv7" },
+      { command: "ahh uuid -n 5", description: "Generate 5 UUIDs" },
+    ],
+    category: "generation",
+  },
   builder: (yargs) =>
     yargs
       .option("v7", {

@@ -8,6 +8,15 @@ interface DeleteArgs {
 export const k8sDeleteCommand: AhhCommand<DeleteArgs> = {
   command: "delete [name]",
   describe: "Delete a kind cluster.",
+  meta: {
+    description:
+      "Deletes a local kind Kubernetes cluster. Defaults to the cluster name 'ahh'.",
+    examples: [
+      { command: "ahh k8s delete", description: "Delete the default 'ahh' cluster" },
+      { command: "ahh k8s delete myapp", description: "Delete a cluster named 'myapp'" },
+    ],
+    category: "kubernetes",
+  },
   builder: (yargs) =>
     yargs.positional("name", {
       type: "string",

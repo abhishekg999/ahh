@@ -16,6 +16,17 @@ interface PortArgs {
 export const portCommand: AhhCommand<PortArgs> = {
   command: "port <target>",
   describe: "Inspect and manage processes on ports.",
+  meta: {
+    description:
+      "Inspect which process is bound to a given port, or list all listening ports. Optionally kill the process with a configurable signal.",
+    examples: [
+      { command: "ahh port 3000", description: "Show which process is on port 3000" },
+      { command: "ahh port 3000 -k", description: "Kill the process on port 3000" },
+      { command: "ahh port 8080 -k -s SIGKILL", description: "Force-kill the process on port 8080" },
+      { command: "ahh port list", description: "List all listening ports" },
+    ],
+    category: "networking",
+  },
   builder: (yargs) =>
     yargs
       .positional("target", {

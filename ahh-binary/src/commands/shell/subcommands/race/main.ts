@@ -31,7 +31,6 @@ export async function raceCommand(commands: string[][]) {
 
   type IndexedResult = SpawnResult & { index: number };
 
-  // Wait for first successful result, or all to settle
   const winner = await new Promise<IndexedResult>((resolve) => {
     let settled = 0;
     let lastResult: IndexedResult | null = null;
@@ -41,12 +40,11 @@ export async function raceCommand(commands: string[][]) {
         settled++;
         lastResult = result;
         if (result.exitCode === 0) resolve(result);
-        if (settled === procs.length) resolve(lastResult!);
+        if (settled === procs.length && lastResult) resolve(lastResult);
       });
     }
   });
 
-  // Kill remaining
   for (let i = 0; i < procs.length; i++) {
     if (i !== winner.index) {
       try {
