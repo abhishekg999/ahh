@@ -32,7 +32,7 @@ export const webhookCommand: AhhCommand<WebhookArgs> = {
       (await getConfig()).DEFAULT_WEBHOOK_HTTP_PORT,
     );
     const stopSpin = startSpinner("Starting tunnel, this may take a second...");
-    const { url: tunnelUrl } = await tunnel(port, argv.name);
+    const { url: tunnelUrl, subdomain } = await tunnel(port, argv.name);
     stopSpin();
 
     if (!tunnelUrl) {
@@ -41,6 +41,6 @@ export const webhookCommand: AhhCommand<WebhookArgs> = {
     }
 
     console.info("Webhook URL", color(tunnelUrl, "cyan"));
-    await openAuthenticatedWebhookDashboard(token, tunnelUrl, port);
+    await openAuthenticatedWebhookDashboard(token, tunnelUrl, subdomain);
   },
 };

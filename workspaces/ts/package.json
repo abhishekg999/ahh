@@ -1,0 +1,19 @@
+{
+  "name": "project-name",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "check": "tsc --noEmit",
+    "lint": "oxlint -c .oxlintrc.json -D correctness -D suspicious -D pedantic -D style -D restriction --deny-warnings src/",
+    "lint:fix": "oxlint -c .oxlintrc.json -D correctness -D suspicious -D pedantic -D style -D restriction --fix src/",
+    "format": "oxfmt --write .",
+    "format:check": "oxfmt --check ."
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "oxfmt": "latest",
+    "oxlint": "latest",
+    "typescript": "latest"
+  }
+}
