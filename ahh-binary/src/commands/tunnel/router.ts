@@ -113,9 +113,16 @@ export function startRouter(port: number, baseHostname: string) {
         const duration = Math.round(performance.now() - start);
         log(subdomain, req.method, url.pathname, res.status, duration);
 
+        // Bun's fetch auto-decompresses gzip/br/zstd responses on arrayBuffer(),
+        // but leaves Content-Encoding and Content-Length on res.headers. Forwarding
+        // them would mislead the client into trying to decompress raw bytes.
+        const headers = new Headers(res.headers);
+        headers.delete("content-encoding");
+        headers.delete("content-length");
+
         return new Response(body, {
           status: res.status,
-          headers: res.headers,
+          headers,
         });
       } catch {
         const duration = Math.round(performance.now() - start);
