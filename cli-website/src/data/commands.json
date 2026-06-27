@@ -1,6 +1,6 @@
 {
-  "version": "1.0.11",
-  "generatedAt": "2026-04-03T21:15:57.388Z",
+  "version": "1.0.13",
+  "generatedAt": "2026-06-27T02:04:48.098Z",
   "commands": [
     {
       "name": "ai",
@@ -909,6 +909,7 @@
           "description": "Name of the workspace",
           "choices": [
             "python-pwntools-interact",
+            "ts",
             "web-xss-template"
           ]
         }

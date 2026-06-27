@@ -30,7 +30,6 @@ export async function createSimpleServer(port: number) {
         const contentType =
           mime.getType(safePath) || "application/octet-stream";
 
-        // @ts-expect-error - file is a Buffer?
         return new Response(file, {
           headers: {
             "Content-Type": contentType,

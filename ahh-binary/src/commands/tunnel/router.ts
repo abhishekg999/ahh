@@ -1,11 +1,13 @@
 import { eq } from "drizzle-orm";
-import { appendFileSync } from "fs";
+import { appendFileSync, mkdirSync } from "fs";
+import { dirname } from "path";
 import { getDb } from "../../db/main";
 import { tunnelMappings } from "../../db/schema";
 import { resource } from "../../utils/fs";
 import { isProcessAlive } from "./mappings";
 
 const LOG_FILE = resource("tunnel/tunnel.log");
+mkdirSync(dirname(LOG_FILE), { recursive: true });
 
 function extractSubdomain(host: string, baseHostname: string): string | null {
   const hostname = host.split(":")[0];
@@ -98,31 +100,27 @@ export function startRouter(port: number, baseHostname: string) {
       const start = performance.now();
 
       try {
-        const res = await fetch(targetUrl, {
+        const requestHeaders = new Headers(req.headers);
+        requestHeaders.set("host", `localhost:${mapping.port}`);
+
+        const upstreamRequest = new Request(targetUrl, {
           method: req.method,
-          headers: (() => {
-            const h = new Headers(req.headers);
-            h.set("host", `localhost:${mapping.port}`);
-            return h;
-          })(),
+          headers: requestHeaders,
           body: req.body,
           redirect: "manual",
         });
 
-        const body = await res.arrayBuffer();
+        const res = await fetch(upstreamRequest, {
+          decompress: false,
+        });
+
         const duration = Math.round(performance.now() - start);
         log(subdomain, req.method, url.pathname, res.status, duration);
 
-        // Bun's fetch auto-decompresses gzip/br/zstd responses on arrayBuffer(),
-        // but leaves Content-Encoding and Content-Length on res.headers. Forwarding
-        // them would mislead the client into trying to decompress raw bytes.
-        const headers = new Headers(res.headers);
-        headers.delete("content-encoding");
-        headers.delete("content-length");
-
-        return new Response(body, {
+        return new Response(res.body, {
           status: res.status,
-          headers,
+          statusText: res.statusText,
+          headers: res.headers,
         });
       } catch {
         const duration = Math.round(performance.now() - start);
