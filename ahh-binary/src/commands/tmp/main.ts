@@ -1,7 +1,7 @@
 import { mkdtemp } from "fs/promises";
 import { tmpdir } from "os";
 import path from "path";
-import { shell } from "../../externals/shell";
+import { currentInteractiveShellArgs, shell } from "../../externals/shell";
 import { color } from "../../utils/text";
 
 export async function createTempDir(prefix: string): Promise<string> {
@@ -9,18 +9,27 @@ export async function createTempDir(prefix: string): Promise<string> {
   return dir;
 }
 
-export async function enterTempDir(prefix: string): Promise<void> {
+export async function enterTempDir(
+  prefix: string,
+  loadShellConfig: boolean,
+): Promise<void> {
   const dir = await createTempDir(prefix);
   console.log(color(dir, "cyan"));
-  console.log(color("Spawning shell. Exit to return.\n", "yellow"));
+  const shellMode = loadShellConfig ? "configured" : "clean";
+  console.log(
+    color(`Spawning ${shellMode} shell. Exit to return.\n`, "yellow"),
+  );
 
-  const proc = await shell.invoke([], {
-    cwd: dir,
-    stdin: "inherit",
-    stdout: "inherit",
-    stderr: "inherit",
-    env: { ...process.env, AHH_TMP: dir },
-  });
+  const proc = await shell.invoke(
+    currentInteractiveShellArgs(loadShellConfig),
+    {
+      cwd: dir,
+      stdin: "inherit",
+      stdout: "inherit",
+      stderr: "inherit",
+      env: { ...process.env, AHH_TMP: dir },
+    },
+  );
 
   await proc.exited;
 }

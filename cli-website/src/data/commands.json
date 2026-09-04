@@ -1,6 +1,6 @@
 {
   "version": "1.0.13",
-  "generatedAt": "2026-06-27T02:04:48.098Z",
+  "generatedAt": "2026-09-04T00:50:39.242Z",
   "commands": [
     {
       "name": "ai",
@@ -851,6 +851,10 @@
         {
           "command": "ahh tmp -p myproject",
           "description": "Create a temp dir with custom prefix"
+        },
+        {
+          "command": "ahh tmp --shell-config",
+          "description": "Load the shell's startup files"
         }
       ],
       "positionals": [],
@@ -861,6 +865,13 @@
           "type": "string",
           "description": "Prefix for the temp directory name",
           "default": "ahh",
+          "required": false
+        },
+        {
+          "name": "shell-config",
+          "type": "boolean",
+          "description": "Load the shell's startup files",
+          "default": false,
           "required": false
         }
       ],
